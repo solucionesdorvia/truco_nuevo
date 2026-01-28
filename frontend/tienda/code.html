@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00c288",
+                        "background-dark": "#07120e",
+                        "gold": "#d4af37",
+                        "felt-green": "#0a1f16",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Serif", "serif"],
+                        "sans": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .felt-texture {
+            background-color: theme("colors.background-dark");
+            background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.9) 100%), url(https://lh3.googleusercontent.com/aida-public/AB6AXuCEYXGoi6eGzJ5Ei7yIv7kQfsbwxa9QIhjc7O8xmyQK_xehplXMpHa-HgY2e44WvG6N9WSE8nK74vipU0wbysEbl0nzLgwbPh624UeWVOK-m-OpOum8ijASh7JqUzN5y4cOF44JUh6sgltAK8G4Y_SgKWgEk22O4mBD637wm-S6S-s9-iPFrvN6Pnw23OqPdmwrqXqrxM4iD4oB4aIsST2C8urCQVZGJ8ZUHrfRI9WyXr6WlqL1_VoXxdEw4MnxeR6uLd_NiJtGFhE);
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+        }
+        .glass-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .gold-glow {
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+        .gold-button {
+            background: linear-gradient(135deg, #d4af37 0%, #f1d27a 50%, #d4af37 100%);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .gold-button:hover {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+        }
+        .tap-target {
+            min-height: 44px;
+            min-width: 44px
+        }#checkout-modal-toggle:checked ~ #checkout-modal {
+            display: flex;
+        }
+    </style>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/assets/app.js" defer></script>
+</head>
+<body class="bg-background-dark felt-texture font-sans text-white min-h-screen selection:bg-gold/30" data-page="tienda">
+<input class="hidden" id="checkout-modal-toggle" type="checkbox"/>
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-40 w-full border-b border-white/5 bg-black/60 backdrop-blur-xl px-4 md:px-12 lg:px-24 py-4 md:py-6">
+<div class="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
+<div class="flex items-center gap-4 lg:gap-6">
+<a class="tap-target flex items-center justify-center text-gold hover:scale-110 transition-transform" href="/lobby">
+<span class="material-symbols-outlined text-[28px] md:text-[32px]">arrow_back</span>
+</a>
+<div class="flex flex-col">
+<h1 class="font-display text-2xl md:text-4xl font-black text-white gold-glow">Tienda de Fichas</h1>
+<span class="text-[10px] md:text-xs font-bold tracking-widest uppercase text-primary/70">Créditos Argentinos</span>
+</div>
+</div>
+<div class="glass-card flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl px-3 py-2 md:px-6 md:py-3 border-gold/30">
+<div class="flex flex-col items-end">
+<span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/50">Tu saldo</span>
+<div class="flex items-center gap-2">
+<span id="chip-balance" class="text-lg md:text-2xl font-black text-gold gold-glow tracking-tight leading-none">--</span>
+<span class="material-symbols-outlined text-gold text-lg md:text-2xl">generating_tokens</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 md:px-12 lg:px-24 py-8 md:py-12 pb-32">
+<div class="mx-auto max-w-[1400px]">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 items-start">
+<div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-white/10 hover:border-gold/40 transition-all duration-300">
+<div class="relative h-40 md:h-48 overflow-hidden bg-gradient-to-b from-white/5 to-transparent flex items-center justify-center p-6">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-gold/10"></div>
+<img alt="Ficha Inicial" class="w-20 md:w-24 h-20 md:h-24 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-4 text-center">
+<div>
+<h3 class="font-display text-xl md:text-2xl font-bold text-white mb-1">Pack Inicial</h3>
+<p class="text-primary font-bold text-base md:text-lg">500 fichas</p>
+</div>
+<div class="bg-black/30 rounded-xl py-2 md:py-3 border border-white/5">
+<span class="text-xl md:text-2xl font-black text-white">$500</span>
+</div>
+<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="500">
+                            Comprar
+                        </label>
+</div>
+</div>
+<div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-gold/40 relative lg:scale-105 z-10 shadow-[0_0_40px_rgba(212,175,55,0.15)] transition-all duration-300">
+<div class="absolute top-4 right-4 z-20">
+<span class="bg-primary text-black text-[9px] md:text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">20% OFF</span>
+</div>
+<div class="relative h-40 md:h-48 overflow-hidden bg-gradient-to-b from-gold/10 to-transparent flex items-center justify-center p-6">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-gold/20"></div>
+<img alt="Ficha Pro" class="w-24 md:w-28 h-24 md:h-28 object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] group-hover:rotate-12 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-4 text-center">
+<div>
+<h3 class="font-display text-xl md:text-2xl font-bold text-white mb-1">Pack Profesional</h3>
+<p class="text-primary font-bold text-base md:text-lg">5.000 fichas</p>
+</div>
+<div class="bg-black/30 rounded-xl py-2 md:py-3 border border-gold/20">
+<span class="text-xl md:text-2xl font-black text-white">$4.000</span>
+</div>
+<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="5000">
+                            Comprar
+                        </label>
+</div>
+</div>
+<div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-white/10 hover:border-gold/40 transition-all duration-300 relative">
+<div class="absolute top-4 right-4 z-20">
+<span class="bg-gold text-black text-[9px] md:text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">BEST VALUE</span>
+</div>
+<div class="relative h-40 md:h-48 overflow-hidden bg-gradient-to-b from-white/5 to-transparent flex items-center justify-center p-6">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-gold/15"></div>
+<img alt="Bolsa Oro" class="w-28 md:w-32 h-28 md:h-32 object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-4 text-center">
+<div>
+<h3 class="font-display text-xl md:text-2xl font-bold text-white mb-1">Bolsa de Oro</h3>
+<p class="text-primary font-bold text-base md:text-lg">20.000 fichas</p>
+</div>
+<div class="bg-black/30 rounded-xl py-2 md:py-3 border border-white/5">
+<span class="text-xl md:text-2xl font-black text-white">$15.000</span>
+</div>
+<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="20000">
+                            Comprar
+                        </label>
+</div>
+</div>
+<div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-white/10 hover:border-gold/40 transition-all duration-300">
+<div class="relative h-40 md:h-48 overflow-hidden bg-gradient-to-b from-white/5 to-transparent flex items-center justify-center p-6">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-gold/5"></div>
+<img alt="Cofre Fortuna" class="w-24 md:w-28 h-24 md:h-28 object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-4 text-center">
+<div>
+<h3 class="font-display text-xl md:text-2xl font-bold text-white mb-1">Cofre Fortuna</h3>
+<p class="text-primary font-bold text-base md:text-lg">50.000 fichas</p>
+</div>
+<div class="bg-black/30 rounded-xl py-2 md:py-3 border border-white/5">
+<span class="text-xl md:text-2xl font-black text-white">$35.000</span>
+</div>
+<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="50000">
+                            Comprar
+                        </label>
+</div>
+</div>
+</div>
+<div class="mt-16 text-center flex flex-col items-center gap-6">
+<p class="text-white/40 text-[10px] md:text-xs font-medium max-w-md uppercase tracking-widest">Transacciones seguras mediante procesadores autorizados en Argentina</p>
+<div class="flex flex-wrap justify-center gap-8 md:gap-12 opacity-40 grayscale hover:opacity-80 transition-opacity">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">payments</span>
+<span class="text-[10px] font-bold">EFECTIVO</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">credit_card</span>
+<span class="text-[10px] font-bold">TARJETAS</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">account_balance</span>
+<span class="text-[10px] font-bold">TRANSFERENCIA</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-6 z-50 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
+<div class="flex items-center justify-between rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/10 p-2 shadow-[0_10px_50px_rgba(0,0,0,0.9)]">
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/40 hover:text-white transition-all group" href="/ranking">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">trophy</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Ligas</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all group relative" href="/tienda">
+<div class="absolute inset-0 bg-gold/10 blur-md rounded-xl"></div>
+<span class="material-symbols-outlined text-gold gold-glow relative z-10">account_balance_wallet</span>
+<span class="text-[10px] font-black text-gold uppercase mt-1 relative z-10 tracking-tighter">Cajero</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/40 hover:text-white transition-all group" href="/lobby">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">style</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Jugar</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/40 hover:text-white transition-all group" href="/comunidad">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">groups</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Social</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/40 hover:text-white transition-all group" href="/soporte">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">support_agent</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Soporte</span>
+</a>
+</div>
+</nav>
+</div>
+<div class="hidden fixed inset-0 z-[100] items-center justify-center p-4" id="checkout-modal">
+<label class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" for="checkout-modal-toggle"></label>
+<div class="glass-card relative w-full max-w-md rounded-[2.5rem] overflow-hidden border-gold/30 shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col">
+<div class="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
+<h2 class="font-display text-2xl font-black text-white uppercase tracking-tight">Finalizar Compra</h2>
+<label class="tap-target flex items-center justify-center text-white/50 hover:text-white cursor-pointer" for="checkout-modal-toggle">
+<span class="material-symbols-outlined">close</span>
+</label>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-6">
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+<img alt="Selected Pack" class="w-16 h-16 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+<div>
+<h4 class="font-bold text-lg text-white">Pack Profesional</h4>
+<p class="text-primary font-bold">5.000 Fichas</p>
+<p class="text-white/60 text-sm">$4.000 ARS</p>
+</div>
+</div>
+<div>
+<span class="text-[10px] font-black uppercase text-white/40 tracking-widest mb-3 block">Seleccioná un método de pago</span>
+<div class="grid grid-cols-1 gap-3">
+<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gold">account_balance</span>
+<span class="font-bold">Mercado Pago / Transferencia</span>
+</div>
+<span class="material-symbols-outlined text-white/20">chevron_right</span>
+</button>
+<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gold">credit_card</span>
+<span class="font-bold">Tarjeta Débito / Crédito</span>
+</div>
+<span class="material-symbols-outlined text-white/20">chevron_right</span>
+</button>
+<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left opacity-60">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gold">currency_bitcoin</span>
+<span class="font-bold">Criptomonedas (USDT)</span>
+</div>
+<span class="text-[8px] font-black bg-white/10 px-2 py-0.5 rounded">PRÓXIMAMENTE</span>
+</button>
+</div>
+</div>
+<div class="pt-4 flex flex-col gap-3">
+<button class="gold-button tap-target w-full rounded-2xl font-black uppercase tracking-widest text-sm py-5 shadow-2xl">
+                    Pagar Ahora
+                </button>
+<p class="text-center text-[10px] text-white/40">Al continuar, aceptás nuestros términos y condiciones de compra de activos digitales.</p>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

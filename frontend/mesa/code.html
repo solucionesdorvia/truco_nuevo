@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Mesa de Truco</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00c288",
+                        "background-dark": "#07120e",
+                        "gold": "#d4af37",
+                        "felt-green": "#0a1f16",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Serif", "serif"],
+                        "sans": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .felt-texture {
+            background-color: theme("colors.background-dark");
+            background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%), url(https://lh3.googleusercontent.com/aida-public/AB6AXuCEYXGoi6eGzJ5Ei7yIv7kQfsbwxa9QIhjc7O8xmyQK_xehplXMpHa-HgY2e44WvG6N9WSE8nK74vipU0wbysEbl0nzLgwbPh624UeWVOK-m-OpOum8ijASh7JqUzN5y4cOF44JUh6sgltAK8G4Y_SgKWgEk22O4mBD637wm-S6S-s9-iPFrvN6Pnw23OqPdmwrqXqrxM4iD4oB4aIsST2C8urCQVZGJ8ZUHrfRI9WyXr6WlqL1_VoXxdEw4MnxeR6uLd_NiJtGFhE);
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+        }
+        .glass-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .gold-glow {
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+        .tap-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body class="bg-background-dark felt-texture font-sans text-white min-h-screen selection:bg-gold/30" data-page="mesa">
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+      <header class="sticky top-0 z-50 w-full border-b border-white/5 bg-black/50 backdrop-blur-xl px-4 md:px-12 py-4">
+        <div class="mx-auto flex max-w-[1200px] items-center justify-between">
+          <div class="flex items-center gap-4">
+            <a class="tap-target flex items-center justify-center text-gold" href="/lobby" data-action="leave-room">
+              <span class="material-symbols-outlined text-[28px]">arrow_back</span>
+            </a>
+            <div class="flex flex-col">
+              <span class="text-xs text-white/50 uppercase tracking-[0.2em]">Mesa</span>
+              <span id="room-id" class="text-sm font-bold text-gold">--</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 rounded-full bg-black/40 px-3 py-1.5 border border-white/10">
+              <span class="text-xs uppercase tracking-widest text-white/60">Equipo A</span>
+              <span id="score-a" class="text-gold font-black">0</span>
+            </div>
+            <div class="flex items-center gap-2 rounded-full bg-black/40 px-3 py-1.5 border border-white/10">
+              <span class="text-xs uppercase tracking-widest text-white/60">Equipo B</span>
+              <span id="score-b" class="text-gold font-black">0</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-4 md:px-12 py-8">
+        <div class="mx-auto max-w-[1100px] grid gap-6">
+          <div class="glass-card rounded-2xl p-6 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span id="turn-indicator" class="text-sm text-white/70">Esperando...</span>
+              <span id="game-status" class="text-sm text-primary/80 uppercase tracking-widest"></span>
+            </div>
+            <div id="pending-call" class="text-sm text-gold font-bold"></div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold mb-4">Mesa</h2>
+            <div id="table-cards" class="grid grid-cols-3 md:grid-cols-6 gap-3"></div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold mb-4">Tu mano</h2>
+            <div id="hand-cards" class="grid grid-cols-3 md:grid-cols-6 gap-3"></div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
+            <button id="btn-envido" class="tap-target rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 font-bold text-xs uppercase tracking-widest">Envido</button>
+            <button id="btn-truco" class="tap-target rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 font-bold text-xs uppercase tracking-widest">Truco</button>
+            <button id="btn-retruco" class="tap-target rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 font-bold text-xs uppercase tracking-widest">Retruco</button>
+            <button id="btn-vale4" class="tap-target rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 font-bold text-xs uppercase tracking-widest">Vale 4</button>
+            <button id="btn-accept" class="tap-target rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs uppercase tracking-widest">Aceptar</button>
+            <button id="btn-reject" class="tap-target rounded-xl border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 font-bold text-xs uppercase tracking-widest">Rechazar</button>
+            <button id="btn-fold" class="tap-target rounded-xl border border-gold/30 bg-gold/10 text-gold hover:bg-gold/20 font-bold text-xs uppercase tracking-widest col-span-2 md:col-span-6">Me voy al mazo</button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <nav class="fixed bottom-6 z-50 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
+      <div class="flex items-center justify-between rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/10 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+        <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/ranking">
+          <span class="material-symbols-outlined group-hover:scale-110 transition-transform">trophy</span>
+          <span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Ligas</span>
+        </a>
+        <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/fichas">
+          <span class="material-symbols-outlined group-hover:scale-110 transition-transform">account_balance_wallet</span>
+          <span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Cajero</span>
+        </a>
+        <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all group relative" href="/lobby">
+          <div class="absolute inset-0 bg-gold/10 blur-md rounded-xl"></div>
+          <span class="material-symbols-outlined text-gold gold-glow relative z-10">style</span>
+          <span class="text-[10px] font-black text-gold uppercase mt-1 relative z-10 tracking-tighter">Jugar</span>
+        </a>
+        <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/comunidad">
+          <span class="material-symbols-outlined group-hover:scale-110 transition-transform">groups</span>
+          <span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Social</span>
+        </a>
+        <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/soporte">
+          <span class="material-symbols-outlined group-hover:scale-110 transition-transform">support_agent</span>
+          <span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Soporte</span>
+        </a>
+      </div>
+    </nav>
+  </body>
+</html>

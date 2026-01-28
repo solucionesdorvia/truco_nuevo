@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00c288",
+                        "background-dark": "#07120e",
+                        "gold": "#d4af37",
+                        "felt-green": "#0a1f16",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Serif", "serif"],
+                        "sans": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .felt-texture {
+            background-color: theme("colors.background-dark");
+            background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%), url(https://lh3.googleusercontent.com/aida-public/AB6AXuCEYXGoi6eGzJ5Ei7yIv7kQfsbwxa9QIhjc7O8xmyQK_xehplXMpHa-HgY2e44WvG6N9WSE8nK74vipU0wbysEbl0nzLgwbPh624UeWVOK-m-OpOum8ijASh7JqUzN5y4cOF44JUh6sgltAK8G4Y_SgKWgEk22O4mBD637wm-S6S-s9-iPFrvN6Pnw23OqPdmwrqXqrxM4iD4oB4aIsST2C8urCQVZGJ8ZUHrfRI9WyXr6WlqL1_VoXxdEw4MnxeR6uLd_NiJtGFhE);
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+        }
+        .glass-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .gold-glow {
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+        .gold-border-glow {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+        .tap-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/assets/app.js" defer></script>
+</head>
+<body class="bg-background-dark felt-texture font-sans text-white min-h-screen selection:bg-gold/30" data-page="comunidad">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 w-full border-b border-white/5 bg-black/40 backdrop-blur-xl px-4 md:px-40 py-3">
+<div class="mx-auto flex max-w-[1200px] items-center justify-between">
+<div class="flex items-center gap-6">
+<a class="tap-target flex items-center justify-center text-gold hover:scale-110 transition-transform" href="/lobby">
+<span class="material-symbols-outlined text-[32px]">arrow_back</span>
+</a>
+<div class="hidden md:flex items-center gap-3 rounded-full bg-white/5 px-4 py-1.5 border border-white/10">
+<span class="material-symbols-outlined text-gold text-sm">groups</span>
+<span class="text-xs font-bold tracking-widest uppercase opacity-80">Comunidad Truquera</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-black/40 rounded-full px-3 py-1.5 border border-white/5">
+<div class="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#00c288]"></div>
+<span class="text-xs font-bold text-primary tracking-tight">1.240 Online</span>
+</div>
+<div class="size-10 rounded-full border border-gold/30 p-0.5 bg-background-dark overflow-hidden">
+<img alt="Avatar" class="h-full w-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 md:px-40 py-6">
+<div class="mx-auto max-w-[960px] flex flex-col gap-8">
+<div class="flex flex-col gap-1">
+<h1 class="font-display text-4xl font-black text-white gold-glow">Comunidad</h1>
+<p class="text-primary/70 text-xs font-bold uppercase tracking-[0.2em]">El club de los mejores truqueros</p>
+</div>
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-1">
+<h2 class="text-xs font-black uppercase tracking-widest text-white/50">Clubes Amigos</h2>
+<button class="text-[10px] font-bold text-gold uppercase border-b border-gold/20">Ver todos</button>
+</div>
+<div class="flex gap-5 overflow-x-auto hide-scrollbar pb-2 pt-1">
+<div class="flex flex-col items-center gap-2 group cursor-pointer shrink-0">
+<div class="size-16 rounded-full border-2 border-gold/40 p-1 bg-black/40 transition-transform group-hover:scale-105 group-hover:border-gold">
+<div class="w-full h-full rounded-full bg-gradient-to-br from-slate-800 to-black flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-gold text-2xl">swords</span>
+</div>
+</div>
+<span class="text-[10px] font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10 group-hover:bg-gold group-hover:text-black transition-colors">La Doce</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer shrink-0">
+<div class="size-16 rounded-full border-2 border-white/10 p-1 bg-black/40 transition-transform group-hover:scale-105">
+<div class="w-full h-full rounded-full bg-gradient-to-br from-red-900 to-black flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-white/40 text-2xl">poker_chip</span>
+</div>
+</div>
+<span class="text-[10px] font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10">El Fortín</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer shrink-0">
+<div class="size-16 rounded-full border-2 border-white/10 p-1 bg-black/40 transition-transform group-hover:scale-105">
+<div class="w-full h-full rounded-full bg-gradient-to-br from-blue-900 to-black flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-white/40 text-2xl">stars</span>
+</div>
+</div>
+<span class="text-[10px] font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10">Academia</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer shrink-0">
+<div class="size-16 rounded-full border-2 border-white/10 p-1 bg-black/40 transition-transform group-hover:scale-105">
+<div class="w-full h-full rounded-full bg-gradient-to-br from-green-900 to-black flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-white/40 text-2xl">shield</span>
+</div>
+</div>
+<span class="text-[10px] font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10">Los Pibes</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer shrink-0">
+<div class="size-16 rounded-full border-2 border-dashed border-white/20 p-1 flex items-center justify-center hover:border-gold/50 transition-colors">
+<span class="material-symbols-outlined text-white/30 group-hover:text-gold">add</span>
+</div>
+<span class="text-[10px] font-bold text-white/30 uppercase">Unirse</span>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-gold text-lg">chat_bubble</span>
+<h2 class="text-xs font-black uppercase tracking-widest text-white/50">Chat Global</h2>
+</div>
+<div class="glass-card rounded-2xl p-4 h-64 flex flex-col justify-between">
+<div class="flex flex-col gap-3 overflow-y-auto pr-2 hide-scrollbar">
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] font-bold text-primary">@ManoChanta:</span>
+<p class="text-xs text-white/80 bg-white/5 p-2 rounded-lg rounded-tl-none">¿Quién para un 2v2 a 30 puntos?</p>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] font-bold text-gold">@ElGaucho_77:</span>
+<p class="text-xs text-white/80 bg-white/5 p-2 rounded-lg rounded-tl-none">¡Dale! Ya estoy en el lobby, metele que falta uno.</p>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] font-bold text-blue-400">@Santi_14:</span>
+<p class="text-xs text-white/80 bg-white/5 p-2 rounded-lg rounded-tl-none">¿Alguien sabe cuándo arranca el torneo de los viernes?</p>
+</div>
+</div>
+<div class="mt-4 flex gap-2">
+<input class="flex-1 bg-black/40 border-white/10 rounded-xl text-xs focus:ring-gold focus:border-gold border px-4 h-11" placeholder="Escribí un mensaje..." type="text"/>
+<button class="size-11 flex items-center justify-center rounded-xl bg-gold/10 text-gold border border-gold/20 hover:bg-gold transition-all hover:text-black">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-gold text-lg">history</span>
+<h2 class="text-xs font-black uppercase tracking-widest text-white/50">Desafíos Recientes</h2>
+</div>
+<div class="flex flex-col gap-3">
+<div class="glass-card flex items-center justify-between p-4 rounded-xl border-l-4 border-l-primary/50">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold">Victoria vs @PibeTruco</span>
+<span class="text-[10px] text-white/40 uppercase tracking-tighter">Hace 15 minutos · 2v2</span>
+</div>
+</div>
+<span class="font-display font-black text-primary text-sm">+$1.500</span>
+</div>
+<div class="glass-card flex items-center justify-between p-4 rounded-xl border-l-4 border-l-red-500/50">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-red-500">trending_down</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold">Derrota vs @ManoChanta</span>
+<span class="text-[10px] text-white/40 uppercase tracking-tighter">Hace 1 hora · 1v1</span>
+</div>
+</div>
+<span class="font-display font-black text-red-400 text-sm">-$500</span>
+</div>
+</div>
+</section>
+</div>
+<section class="flex flex-col gap-4 pb-20">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gold text-lg">person_check</span>
+<h2 class="text-xs font-black uppercase tracking-widest text-white/50">Amigos Conectados</h2>
+</div>
+<span class="text-[10px] font-bold text-white/30 uppercase">6 Amigos</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="glass-card flex items-center justify-between p-4 rounded-2xl group hover:border-gold/30 transition-all">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-11 rounded-full border border-white/10 p-0.5 overflow-hidden">
+<div class="w-full h-full rounded-full bg-slate-700 flex items-center justify-center font-bold text-gold">CM</div>
+</div>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-primary border-2 border-background-dark shadow-[0_0_8px_#00c288]"></div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-bold text-sm">Cacho Maestro</span>
+<span class="text-[8px] px-1.5 py-0.5 bg-gold/20 text-gold rounded font-black border border-gold/20 uppercase">LVL 42</span>
+</div>
+<span class="text-[10px] text-white/40">En el lobby · Esperando</span>
+</div>
+</div>
+<button class="tap-target px-4 h-9 rounded-lg bg-gold/10 text-gold border border-gold/20 text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:text-black transition-all">
+                                Invitar
+                            </button>
+</div>
+<div class="glass-card flex items-center justify-between p-4 rounded-2xl group hover:border-gold/30 transition-all">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-11 rounded-full border border-white/10 p-0.5 overflow-hidden">
+<div class="w-full h-full rounded-full bg-slate-800 flex items-center justify-center font-bold text-primary">RE</div>
+</div>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-primary border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-bold text-sm">Rey de Espada</span>
+<span class="text-[8px] px-1.5 py-0.5 bg-gold/20 text-gold rounded font-black border border-gold/20 uppercase">LVL 15</span>
+</div>
+<span class="text-[10px] text-white/40">Conectado</span>
+</div>
+</div>
+<button class="tap-target px-4 h-9 rounded-lg bg-gold/10 text-gold border border-gold/20 text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:text-black transition-all">
+                                Invitar
+                            </button>
+</div>
+<div class="glass-card flex items-center justify-between p-4 rounded-2xl opacity-60">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-11 rounded-full border border-white/10 p-0.5 overflow-hidden grayscale">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-white/40">TP</div>
+</div>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-white/20 border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-bold text-sm">Truco o Plomo</span>
+<span class="text-[8px] px-1.5 py-0.5 bg-white/5 text-white/40 rounded font-black border border-white/10 uppercase">LVL 08</span>
+</div>
+<span class="text-[10px] text-white/40">Desconectado</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-white/10">mail</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+<nav class="fixed bottom-6 z-50 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
+<div class="flex items-center justify-between rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/10 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/ranking">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">trophy</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Ligas</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/fichas">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">account_balance_wallet</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Cajero</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/lobby">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">style</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Jugar</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all group relative" href="/comunidad">
+<div class="absolute inset-0 bg-gold/10 blur-md rounded-xl"></div>
+<span class="material-symbols-outlined text-gold gold-glow relative z-10">groups</span>
+<span class="text-[10px] font-black text-gold uppercase mt-1 relative z-10 tracking-tighter">Social</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/soporte">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">support_agent</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Soporte</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

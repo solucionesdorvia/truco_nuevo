@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00c288",
+                        "background-dark": "#07120e",
+                        "gold": "#d4af37",
+                        "felt-green": "#0a1f16",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Serif", "serif"],
+                        "sans": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">.felt-texture {
+    background-color: theme("colors.background-dark");
+    background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%), url(https://lh3.googleusercontent.com/aida-public/AB6AXuCEYXGoi6eGzJ5Ei7yIv7kQfsbwxa9QIhjc7O8xmyQK_xehplXMpHa-HgY2e44WvG6N9WSE8nK74vipU0wbysEbl0nzLgwbPh624UeWVOK-m-OpOum8ijASh7JqUzN5y4cOF44JUh6sgltAK8G4Y_SgKWgEk22O4mBD637wm-S6S-s9-iPFrvN6Pnw23OqPdmwrqXqrxM4iD4oB4aIsST2C8urCQVZGJ8ZUHrfRI9WyXr6WlqL1_VoXxdEw4MnxeR6uLd_NiJtGFhE);background-attachment: fixed;
+    background-blend-mode: overlay
+    }
+.glass-card {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 194, 136, 0.03)
+    }
+.glass-card:hover {
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 25px rgba(0, 194, 136, 0.1)
+    }
+.gold-glow {
+    text-shadow: 0 0 12px rgba(212, 175, 55, 0.4)
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.tap-target {
+    min-height: 44px;
+    min-width: 44px
+    }
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+}
+</style>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/assets/app.js" defer></script>
+</head>
+<body class="bg-background-dark felt-texture font-sans text-white min-h-screen selection:bg-gold/30" data-page="lobby">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 w-full border-b border-white/5 bg-black/40 backdrop-blur-xl px-4 md:px-40 py-3">
+<div class="mx-auto flex max-w-[1200px] items-center justify-between">
+<div class="flex items-center gap-6">
+<a class="tap-target flex items-center justify-center text-gold hover:scale-110 transition-transform" href="/landing">
+<span class="material-symbols-outlined text-[32px]">arrow_back</span>
+</a>
+<div class="hidden md:flex items-center gap-3 rounded-full bg-white/5 px-4 py-1.5 border border-white/10">
+<span class="material-symbols-outlined text-gold text-sm">workspace_premium</span>
+<span class="text-xs font-bold tracking-widest uppercase opacity-80">Liga activa · Temporada 1</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-black/40 rounded-full px-3 py-1.5 border border-white/5">
+<div class="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#00c288]"></div>
+<span class="text-xs font-bold text-primary tracking-tight">24ms</span>
+</div>
+<div class="relative">
+<div class="size-11 rounded-full border-2 border-gold/50 p-0.5 bg-background-dark overflow-hidden ring-4 ring-gold/5">
+<img alt="Avatar" class="h-full w-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 md:px-40 py-8">
+<div class="mx-auto max-w-[960px] flex flex-col gap-8">
+<div class="flex items-end justify-between gap-4">
+<div class="flex flex-col gap-1">
+<h1 class="font-display text-5xl font-black text-white gold-glow">Jugar</h1>
+<p class="text-primary/70 text-sm font-bold uppercase tracking-[0.2em]">Mesas activas 24/7</p>
+</div>
+<div class="flex items-center gap-2.5 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-red-500">
+<span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+<span class="text-[10px] font-black uppercase tracking-widest">En vivo</span>
+</div>
+</div>
+<div class="flex w-full rounded-xl bg-black/60 p-1.5 border border-white/10 shadow-inner">
+<label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg py-3 tap-target transition-all has-[:checked]:bg-gold has-[:checked]:text-black text-white/60 hover:text-white">
+<input checked="" class="hidden" name="action" type="radio"/>
+<span class="font-bold text-xs uppercase tracking-widest">Buscar mesa</span>
+</label>
+<label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg py-3 tap-target transition-all has-[:checked]:bg-gold has-[:checked]:text-black text-white/60 hover:text-white" data-action="open-create-modal">
+<input class="hidden" name="action" type="radio"/>
+<span class="font-bold text-xs uppercase tracking-widest">Crear mesa</span>
+</label>
+<label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg py-3 tap-target transition-all has-[:checked]:bg-gold has-[:checked]:text-black text-white/60 hover:text-white" data-nav="/unirse">
+<input class="hidden" name="action" type="radio"/>
+<span class="font-bold text-xs uppercase tracking-widest">Unirse</span>
+</label>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap gap-2">
+<button class="tap-target flex items-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 px-4 py-2 border border-white/10 transition-colors">
+<span class="text-xs font-bold uppercase tracking-wider text-white/80">Modo</span>
+<span class="material-symbols-outlined text-gold text-lg">expand_more</span>
+</button>
+<button class="tap-target flex items-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 px-4 py-2 border border-white/10 transition-colors">
+<span class="text-xs font-bold uppercase tracking-wider text-white/80">Economía</span>
+<span class="material-symbols-outlined text-gold text-lg">expand_more</span>
+</button>
+<button class="tap-target flex items-center gap-2 rounded-lg bg-white/5 hover:bg-white/10 px-4 py-2 border border-white/10 transition-colors">
+<span class="text-xs font-bold uppercase tracking-wider text-white/80">Orden</span>
+<span class="material-symbols-outlined text-gold text-lg">expand_more</span>
+</button>
+</div>
+<button class="tap-target size-11 flex items-center justify-center rounded-lg bg-gold/5 text-gold border border-gold/20 hover:bg-gold/15 transition-all" data-action="refresh-rooms">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+</div>
+<div class="flex flex-col gap-5">
+  <div id="rooms-list" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+</div>
+</main>
+<div id="create-modal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+  <div class="relative z-10 flex h-full w-full items-end justify-center sm:items-center">
+    <div class="glass-card w-full max-w-[500px] rounded-t-[2.5rem] sm:rounded-[2.5rem] flex flex-col max-h-[92vh] border-t border-gold/30">
+      <div class="flex flex-col items-center pt-4 pb-2">
+        <div class="h-1.5 w-12 rounded-full bg-gold/40 mb-6"></div>
+        <div class="w-full px-8 flex justify-between items-center">
+          <div>
+            <h2 class="text-white text-3xl font-bold tracking-tight">Crear Partida</h2>
+            <p class="text-gold/60 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Lobby Premium Argentino</p>
+          </div>
+          <button class="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all" data-action="close-create-modal">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+      <div class="px-8 py-4 space-y-8 overflow-y-auto custom-scrollbar">
+        <section>
+          <h3 class="text-white/40 text-[11px] font-bold uppercase tracking-widest mb-3 ml-1">Tipo de Mesa</h3>
+          <div class="flex h-14 w-full items-center justify-center rounded-2xl bg-black/40 p-1.5 border border-white/5 shadow-inner">
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-white/10 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all gap-2">
+              <span class="material-symbols-outlined text-lg">public</span>
+              <span>Pública</span>
+              <input checked="" class="sr-only" name="privacy" type="radio" value="public"/>
+            </label>
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-white/10 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all gap-2">
+              <span class="material-symbols-outlined text-lg">lock</span>
+              <span>Privada</span>
+              <input class="sr-only" name="privacy" type="radio" value="private"/>
+            </label>
+          </div>
+        </section>
+        <section>
+          <h3 class="text-white/40 text-[11px] font-bold uppercase tracking-widest mb-3 ml-1">Modo de Juego</h3>
+          <div class="flex h-14 w-full items-center justify-center rounded-2xl bg-black/40 p-1.5 border border-white/5 shadow-inner">
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-primary/90 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+              <span>1v1</span>
+              <input checked="" class="sr-only" name="mode" type="radio" value="1v1"/>
+            </label>
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-primary/90 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+              <span>2v2</span>
+              <input class="sr-only" name="mode" type="radio" value="2v2"/>
+            </label>
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-primary/90 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+              <span>3v3</span>
+              <input class="sr-only" name="mode" type="radio" value="3v3"/>
+            </label>
+          </div>
+        </section>
+        <div class="grid grid-cols-2 gap-6">
+          <section>
+            <h3 class="text-white/40 text-[11px] font-bold uppercase tracking-widest mb-3 ml-1">Puntos</h3>
+            <div class="flex h-14 items-center justify-center rounded-2xl bg-black/40 p-1.5 border border-white/5 shadow-inner">
+              <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl has-[:checked]:bg-white/10 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+                <span>15</span>
+                <input class="sr-only" name="points" type="radio" value="15"/>
+              </label>
+              <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl has-[:checked]:bg-white/10 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+                <span>30</span>
+                <input checked="" class="sr-only" name="points" type="radio" value="30"/>
+              </label>
+            </div>
+          </section>
+          <section>
+            <h3 class="text-white/40 text-[11px] font-bold uppercase tracking-widest mb-3 ml-1">Reglas</h3>
+            <div class="flex items-center justify-between bg-black/40 px-5 h-14 rounded-2xl border border-white/5 shadow-inner">
+              <span class="text-white/60 text-sm font-bold">Flor</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input checked="" class="sr-only peer" type="checkbox" name="allowFlor"/>
+                <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
+          </section>
+        </div>
+        <section class="space-y-4">
+          <h3 class="text-white/40 text-[11px] font-bold uppercase tracking-widest mb-3 ml-1">Economía</h3>
+          <div class="flex h-14 w-full items-center justify-center rounded-2xl bg-black/40 p-1.5 border border-white/5 shadow-inner">
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-white/10 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+              <span>Gratis</span>
+              <input class="sr-only" name="economy" type="radio" value="free"/>
+            </label>
+            <label class="flex cursor-pointer h-full grow items-center justify-center rounded-xl px-2 has-[:checked]:bg-white/10 has-[:checked]:text-white text-white/30 text-sm font-bold transition-all">
+              <span>Entrada fija</span>
+              <input checked="" class="sr-only" name="economy" type="radio" value="paid"/>
+            </label>
+          </div>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+              <span class="text-gold font-bold text-2xl">$</span>
+            </div>
+            <input class="block w-full pl-12 pr-6 py-5 bg-black/40 border border-white/10 rounded-2xl text-white font-bold text-2xl focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all placeholder-white/10 outline-none shadow-inner" placeholder="0" type="number" value="1000" name="entryFee"/>
+            <div class="mt-3 flex items-center gap-2 px-2">
+              <span class="material-symbols-outlined text-gold text-base">monetization_on</span>
+              <p class="text-gold/60 text-[11px] font-bold tracking-wider">1 ficha = $1 ARS</p>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="p-8 pt-4 pb-10">
+        <button class="w-full bg-gradient-to-b from-gold to-[#a68632] hover:from-[#eec555] hover:to-[#d4af37] text-black font-black text-xl py-5 rounded-2xl uppercase tracking-widest gold-glow flex items-center justify-center gap-3 transition-all active:scale-[0.98] border-t border-white/30 shadow-2xl" data-action="create-room">
+          Crear partida
+          <span class="material-symbols-outlined font-black">arrow_forward</span>
+        </button>
+        <p class="text-center text-white/20 text-[10px] mt-4 font-medium uppercase tracking-[0.2em]">Sujeto a términos y condiciones</p>
+      </div>
+    </div>
+  </div>
+</div>
+<nav class="fixed bottom-6 z-50 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
+<div class="flex items-center justify-between rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/10 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/ranking">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">trophy</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Ligas</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/fichas">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">account_balance_wallet</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Cajero</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all group relative" href="/lobby">
+<div class="absolute inset-0 bg-gold/10 blur-md rounded-xl"></div>
+<span class="material-symbols-outlined text-gold gold-glow relative z-10">style</span>
+<span class="text-[10px] font-black text-gold uppercase mt-1 relative z-10 tracking-tighter">Jugar</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/comunidad">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">groups</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Social</span>
+</a>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/soporte">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">support_agent</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Soporte</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>
