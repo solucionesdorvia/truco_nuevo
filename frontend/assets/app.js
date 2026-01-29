@@ -277,7 +277,7 @@ const renderRooms = (rooms) => {
   });
 };
 
-const bindCreateRoom = (root = document) => {
+const bindCreateRoom = (root = document, onCreated) => {
   const createButton = root.querySelector('[data-action="create-room"]');
   if (!createButton) return;
   const socket = connectSocket();
@@ -305,6 +305,7 @@ const bindCreateRoom = (root = document) => {
     appState.latestRoom = room;
     if (appState.pendingCreate) {
       appState.pendingCreate = false;
+      if (onCreated) onCreated();
       navigateTo(`/mesa/${room.id}`);
     }
   });
@@ -341,7 +342,7 @@ const initLobby = () => {
     }
   });
   if (modal) {
-    bindCreateRoom(modal);
+    bindCreateRoom(modal, () => setModalOpen(false));
   }
   bindSocketOnce(socket, 'room:state', (room) => {
     appState.latestRoom = room;
@@ -583,11 +584,10 @@ const initCajero = () => {
   const checkoutName = $('#checkout-pack-name');
   const checkoutChips = $('#checkout-pack-chips');
   const checkoutPrice = $('#checkout-pack-price');
-  const payButton = $('#checkout-pay');
-  const methodButtons = $$('[data-payment-method]');
+  const dniInput = $('#checkout-dni');
+  const confirmButton = $('#checkout-confirm');
   const closeButtons = $$('[data-action="close-checkout"]');
   let selectedAmount = 0;
-  let selectedMethod = null;
 
   const setCheckoutOpen = (isOpen) => {
     if (!checkoutModal) return;
@@ -602,16 +602,13 @@ const initCajero = () => {
       const packPrice = btn.getAttribute('data-pack-price') || '';
       if (!amount) return;
       selectedAmount = amount;
-      selectedMethod = null;
+      if (dniInput) dniInput.value = "";
       if (checkoutName) checkoutName.textContent = packName;
       if (checkoutChips) checkoutChips.textContent = `${formatNumber(amount)} fichas`;
       if (checkoutPrice) checkoutPrice.textContent = packPrice;
-      methodButtons.forEach((method) => {
-        method.classList.remove('border-gold/50', 'bg-gold/5');
-      });
-      if (payButton) {
-        payButton.setAttribute('disabled', 'true');
-        payButton.classList.add('opacity-50', 'cursor-not-allowed');
+      if (confirmButton) {
+        confirmButton.setAttribute('disabled', 'true');
+        confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
       }
       setCheckoutOpen(true);
     });
@@ -626,28 +623,27 @@ const initCajero = () => {
     }
   });
 
-  methodButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      if (button.getAttribute('data-payment-disabled') === 'true') return;
-      selectedMethod = button.getAttribute('data-payment-method');
-      methodButtons.forEach((method) => {
-        method.classList.remove('border-gold/50', 'bg-gold/5');
-      });
-      button.classList.add('border-gold/50', 'bg-gold/5');
-      if (payButton) {
-        payButton.removeAttribute('disabled');
-        payButton.classList.remove('opacity-50', 'cursor-not-allowed');
-      }
-    });
+  const validateDni = (value) => /^[0-9]{7,8}$/.test(value);
+  dniInput?.addEventListener('input', () => {
+    if (!confirmButton) return;
+    const valid = validateDni(dniInput.value.trim());
+    confirmButton.toggleAttribute('disabled', !valid);
+    confirmButton.classList.toggle('opacity-50', !valid);
+    confirmButton.classList.toggle('cursor-not-allowed', !valid);
   });
 
-  payButton?.addEventListener('click', async () => {
-    if (!selectedAmount || !selectedMethod) return;
-    payButton.setAttribute('disabled', 'true');
-    payButton.classList.add('opacity-50', 'cursor-not-allowed');
+  confirmButton?.addEventListener('click', async () => {
+    if (!selectedAmount) return;
+    const dniValue = dniInput?.value.trim() ?? "";
+    if (!validateDni(dniValue)) {
+      showToast("Ingresá un DNI válido", "info");
+      return;
+    }
+    confirmButton.setAttribute('disabled', 'true');
+    confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
     try {
       await apiFetch('/api/chips/add', { method: 'POST', body: JSON.stringify({ amount: selectedAmount }) });
-      showToast("Compra confirmada", "success");
+      showToast("Transferencia en revisión", "success");
       setCheckoutOpen(false);
       refreshBalance();
       refreshHistory();
@@ -655,8 +651,8 @@ const initCajero = () => {
       console.error(err);
       showToast("Error al procesar el pago", "error");
     } finally {
-      payButton.removeAttribute('disabled');
-      payButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      confirmButton.removeAttribute('disabled');
+      confirmButton.classList.remove('opacity-50', 'cursor-not-allowed');
     }
   });
 };
