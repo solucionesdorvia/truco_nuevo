@@ -73,8 +73,11 @@
 <span class="material-symbols-outlined text-[32px]">arrow_back</span>
 </a>
 <div class="hidden md:flex items-center gap-3 rounded-full bg-white/5 px-4 py-1.5 border border-white/10">
-<span class="material-symbols-outlined text-gold text-sm">workspace_premium</span>
-<span class="text-xs font-bold tracking-widest uppercase opacity-80">Liga activa · Temporada 1</span>
+<svg aria-hidden="true" class="w-4 h-4 text-gold" viewBox="0 0 24 24" fill="currentColor">
+<path d="M5 5h14v4H5z"></path>
+<path d="M7 11h10v8H7z" opacity="0.6"></path>
+</svg>
+<span class="text-xs font-bold tracking-widest uppercase opacity-80">Liga activa</span>
 </div>
 </div>
 <div class="flex items-center gap-6">
@@ -140,7 +143,7 @@
 </div>
 </main>
 <div id="create-modal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-md" data-action="close-create-modal"></div>
   <div class="relative z-10 flex h-full w-full items-end justify-center sm:items-center">
     <div class="glass-card w-full max-w-[500px] rounded-t-[2.5rem] sm:rounded-[2.5rem] flex flex-col max-h-[92vh] border-t border-gold/30">
       <div class="flex flex-col items-center pt-4 pb-2">

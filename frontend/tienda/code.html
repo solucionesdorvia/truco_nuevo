@@ -55,15 +55,12 @@
         .tap-target {
             min-height: 44px;
             min-width: 44px
-        }#checkout-modal-toggle:checked ~ #checkout-modal {
-            display: flex;
         }
     </style>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/assets/app.js" defer></script>
 </head>
 <body class="bg-background-dark felt-texture font-sans text-white min-h-screen selection:bg-gold/30" data-page="tienda">
-<input class="hidden" id="checkout-modal-toggle" type="checkbox"/>
 <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
 <header class="sticky top-0 z-40 w-full border-b border-white/5 bg-black/60 backdrop-blur-xl px-4 md:px-12 lg:px-24 py-4 md:py-6">
 <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
@@ -72,16 +69,19 @@
 <span class="material-symbols-outlined text-[28px] md:text-[32px]">arrow_back</span>
 </a>
 <div class="flex flex-col">
-<h1 class="font-display text-2xl md:text-4xl font-black text-white gold-glow">Tienda de Fichas</h1>
-<span class="text-[10px] md:text-xs font-bold tracking-widest uppercase text-primary/70">Créditos Argentinos</span>
+<h1 class="font-display text-2xl md:text-4xl font-black text-white gold-glow">Cajero</h1>
+<span class="text-[10px] md:text-xs font-bold tracking-widest uppercase text-primary/70">Saldo y compras</span>
 </div>
 </div>
 <div class="glass-card flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl px-3 py-2 md:px-6 md:py-3 border-gold/30">
 <div class="flex flex-col items-end">
 <span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/50">Tu saldo</span>
 <div class="flex items-center gap-2">
-<span id="chip-balance" class="text-lg md:text-2xl font-black text-gold gold-glow tracking-tight leading-none">--</span>
-<span class="material-symbols-outlined text-gold text-lg md:text-2xl">generating_tokens</span>
+<span id="chip-balance" class="text-lg md:text-2xl font-black text-gold gold-glow tracking-tight leading-none">—</span>
+<svg aria-hidden="true" class="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="currentColor">
+<path d="M12 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path>
+<path d="M6 14h12v4H6z" opacity="0.5"></path>
+</svg>
 </div>
 </div>
 </div>
@@ -103,9 +103,9 @@
 <div class="bg-black/30 rounded-xl py-2 md:py-3 border border-white/5">
 <span class="text-xl md:text-2xl font-black text-white">$500</span>
 </div>
-<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="500">
+<button class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 flex items-center justify-center" data-buy-amount="500" data-pack-name="Pack Inicial" data-pack-price="$500 ARS">
                             Comprar
-                        </label>
+                        </button>
 </div>
 </div>
 <div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-gold/40 relative lg:scale-105 z-10 shadow-[0_0_40px_rgba(212,175,55,0.15)] transition-all duration-300">
@@ -124,9 +124,9 @@
 <div class="bg-black/30 rounded-xl py-2 md:py-3 border border-gold/20">
 <span class="text-xl md:text-2xl font-black text-white">$4.000</span>
 </div>
-<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="5000">
+<button class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 flex items-center justify-center" data-buy-amount="5000" data-pack-name="Pack Profesional" data-pack-price="$4.000 ARS">
                             Comprar
-                        </label>
+                        </button>
 </div>
 </div>
 <div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-white/10 hover:border-gold/40 transition-all duration-300 relative">
@@ -145,9 +145,9 @@
 <div class="bg-black/30 rounded-xl py-2 md:py-3 border border-white/5">
 <span class="text-xl md:text-2xl font-black text-white">$15.000</span>
 </div>
-<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="20000">
+<button class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 flex items-center justify-center" data-buy-amount="20000" data-pack-name="Bolsa de Oro" data-pack-price="$15.000 ARS">
                             Comprar
-                        </label>
+                        </button>
 </div>
 </div>
 <div class="glass-card group flex flex-col rounded-[2rem] overflow-hidden border-white/10 hover:border-gold/40 transition-all duration-300">
@@ -163,9 +163,9 @@
 <div class="bg-black/30 rounded-xl py-2 md:py-3 border border-white/5">
 <span class="text-xl md:text-2xl font-black text-white">$35.000</span>
 </div>
-<label class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 cursor-pointer flex items-center justify-center" for="checkout-modal-toggle" data-buy-amount="50000">
+<button class="gold-button tap-target w-full rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all py-3 md:py-4 flex items-center justify-center" data-buy-amount="50000" data-pack-name="Cofre Fortuna" data-pack-price="$35.000 ARS">
                             Comprar
-                        </label>
+                        </button>
 </div>
 </div>
 </div>
@@ -188,6 +188,15 @@
 </div>
 </div>
 </main>
+<section class="px-4 md:px-12 lg:px-24 pb-36">
+<div class="mx-auto max-w-[1400px] glass-card rounded-[2rem] p-6 md:p-8 border-gold/10">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-display text-xl md:text-2xl font-black text-white">Historial</h2>
+<span class="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Últimos movimientos</span>
+</div>
+<div id="chip-history" class="flex flex-col"></div>
+</div>
+</section>
 <nav class="fixed bottom-6 z-50 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
 <div class="flex items-center justify-between rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/10 p-2 shadow-[0_10px_50px_rgba(0,0,0,0.9)]">
 <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/40 hover:text-white transition-all group" href="/ranking">
@@ -215,41 +224,45 @@
 </nav>
 </div>
 <div class="hidden fixed inset-0 z-[100] items-center justify-center p-4" id="checkout-modal">
-<label class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" for="checkout-modal-toggle"></label>
+<div class="absolute inset-0 bg-black/80 backdrop-blur-sm" data-action="close-checkout"></div>
 <div class="glass-card relative w-full max-w-md rounded-[2.5rem] overflow-hidden border-gold/30 shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col">
 <div class="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
 <h2 class="font-display text-2xl font-black text-white uppercase tracking-tight">Finalizar Compra</h2>
-<label class="tap-target flex items-center justify-center text-white/50 hover:text-white cursor-pointer" for="checkout-modal-toggle">
+<button class="tap-target flex items-center justify-center text-white/50 hover:text-white" data-action="close-checkout">
 <span class="material-symbols-outlined">close</span>
-</label>
+</button>
 </div>
 <div class="p-6 md:p-8 flex flex-col gap-6">
 <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
 <img alt="Selected Pack" class="w-16 h-16 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
 <div>
-<h4 class="font-bold text-lg text-white">Pack Profesional</h4>
-<p class="text-primary font-bold">5.000 Fichas</p>
-<p class="text-white/60 text-sm">$4.000 ARS</p>
+<h4 id="checkout-pack-name" class="font-bold text-lg text-white">Pack Profesional</h4>
+<p id="checkout-pack-chips" class="text-primary font-bold">5.000 Fichas</p>
+<p id="checkout-pack-price" class="text-white/60 text-sm">$4.000 ARS</p>
 </div>
 </div>
 <div>
 <span class="text-[10px] font-black uppercase text-white/40 tracking-widest mb-3 block">Seleccioná un método de pago</span>
 <div class="grid grid-cols-1 gap-3">
-<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left">
+<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left" data-payment-method="transferencia">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-gold">account_balance</span>
 <span class="font-bold">Mercado Pago / Transferencia</span>
 </div>
-<span class="material-symbols-outlined text-white/20">chevron_right</span>
+<svg aria-hidden="true" class="w-4 h-4 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M9 6l6 6-6 6"></path>
+</svg>
 </button>
-<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left">
+<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left" data-payment-method="tarjeta">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-gold">credit_card</span>
 <span class="font-bold">Tarjeta Débito / Crédito</span>
 </div>
-<span class="material-symbols-outlined text-white/20">chevron_right</span>
+<svg aria-hidden="true" class="w-4 h-4 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M9 6l6 6-6 6"></path>
+</svg>
 </button>
-<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-all text-left opacity-60">
+<button class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/10 transition-all text-left opacity-60 cursor-not-allowed" data-payment-method="usdt" data-payment-disabled="true" disabled>
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-gold">currency_bitcoin</span>
 <span class="font-bold">Criptomonedas (USDT)</span>
@@ -259,7 +272,7 @@
 </div>
 </div>
 <div class="pt-4 flex flex-col gap-3">
-<button class="gold-button tap-target w-full rounded-2xl font-black uppercase tracking-widest text-sm py-5 shadow-2xl">
+<button id="checkout-pay" class="gold-button tap-target w-full rounded-2xl font-black uppercase tracking-widest text-sm py-5 shadow-2xl opacity-50 cursor-not-allowed" disabled>
                     Pagar Ahora
                 </button>
 <p class="text-center text-[10px] text-white/40">Al continuar, aceptás nuestros términos y condiciones de compra de activos digitales.</p>

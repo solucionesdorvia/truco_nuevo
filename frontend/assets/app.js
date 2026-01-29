@@ -8,11 +8,49 @@ const appState = {
   roomId: null,
   latestRoom: null,
   latestGame: null,
-  chipsInterval: null
+  chipsInterval: null,
+  roomsInterval: null,
+  toastTimeout: null
 };
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+const formatNumber = (value) => {
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue)) return "0";
+  return numberValue.toLocaleString("es-AR");
+};
+
+const ensureToastContainer = () => {
+  let container = $("#toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "fixed top-5 right-5 z-[200] flex flex-col gap-3";
+    document.body.appendChild(container);
+  }
+  return container;
+};
+
+const showToast = (message, tone = "info") => {
+  const container = ensureToastContainer();
+  const toast = document.createElement("div");
+  const toneClass =
+    tone === "success"
+      ? "border-primary/40 text-white"
+      : tone === "error"
+      ? "border-red-500/40 text-white"
+      : "border-white/20 text-white/90";
+  toast.className = `glass-card border ${toneClass} px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  if (appState.toastTimeout) {
+    clearTimeout(appState.toastTimeout);
+  }
+  appState.toastTimeout = setTimeout(() => {
+    toast.remove();
+  }, 2800);
+};
 
 const apiFetch = async (path, options = {}) => {
   const headers = new Headers(options.headers || {});
@@ -73,11 +111,11 @@ const connectSocket = () => {
   });
   socket.on("rooms:error", (payload) => {
     console.error(payload?.message || "rooms error");
-    alert(payload?.message || "Error en la sala");
+    showToast(payload?.message || "Error en la sala", "error");
   });
   socket.on("game:error", (payload) => {
     console.error(payload?.message || "game error");
-    alert(payload?.message || "Error en la partida");
+    showToast(payload?.message || "Error en la partida", "error");
   });
   appState.socket = socket;
   return socket;
@@ -97,6 +135,9 @@ const scheduleTeardown = () => {
     }
     if (appState.chipsInterval) {
       clearInterval(appState.chipsInterval);
+    }
+    if (appState.roomsInterval) {
+      clearInterval(appState.roomsInterval);
     }
     disconnectSocket();
   });
@@ -124,13 +165,15 @@ const bindFallbackButtons = () => {
       button.dataset.nav ||
       button.dataset.action ||
       button.dataset.joinRoom ||
+      button.dataset.buyAmount ||
+      button.dataset.paymentMethod ||
       button.dataset.playCard ||
       (button.id && button.id.startsWith('btn-'))
     ) {
       return;
     }
     event.preventDefault();
-    alert('Próximamente.');
+    showToast('Próximamente.', "info");
   });
 };
 
@@ -142,7 +185,8 @@ const bindSocketOnce = (socket, event, handler) => {
 const protectRoute = () => {
   const storedToken = localStorage.getItem("truco_token");
   const page = document.body.dataset.page || getPageFromPath();
-  if (!storedToken && page !== "landing") {
+  const publicPages = new Set(["landing", "faq", "privacidad", "terminos", "soporte"]);
+  if (!storedToken && !publicPages.has(page)) {
     navigateTo("/landing");
     return false;
   }
@@ -164,6 +208,18 @@ const renderRooms = (rooms) => {
     const teamSize = room.mode === "1v1" ? 1 : room.mode === "2v2" ? 2 : 3;
     const countA = room.members.filter((m) => m.team === "A").length;
     const countB = room.members.filter((m) => m.team === "B").length;
+    const statusLabel =
+      room.status === "playing"
+        ? "Jugando"
+        : room.status === "finished"
+        ? "Finalizada"
+        : "Esperando";
+    const statusClass =
+      room.status === "playing"
+        ? "text-red-400 border-red-500/30 bg-red-500/10"
+        : room.status === "finished"
+        ? "text-white/40 border-white/10 bg-white/5"
+        : "text-primary border-primary/30 bg-primary/10";
     return `
       <div class="glass-card flex flex-col rounded-2xl overflow-hidden transition-all group">
         <div class="p-6 flex flex-col gap-5">
@@ -176,6 +232,7 @@ const renderRooms = (rooms) => {
             </div>
             <div class="flex gap-2">
               <span class="rounded bg-black/40 text-gold text-[10px] font-black px-2.5 py-1 border border-gold/40 uppercase tracking-tighter">${formatRoomMode(room)}</span>
+              <span class="rounded text-[10px] font-black px-2.5 py-1 border uppercase tracking-tighter ${statusClass}">${statusLabel}</span>
               ${isPrivate ? '<span class="rounded bg-red-500/10 text-red-400 text-[10px] font-black px-2.5 py-1 border border-red-500/20 uppercase">Privada 🔒</span>' : ''}
             </div>
           </div>
@@ -262,14 +319,26 @@ const initLobby = () => {
   refresh?.addEventListener('click', () => socket.emit('rooms:list'));
   const modal = document.querySelector('#create-modal');
   const openModal = document.querySelector('[data-action="open-create-modal"]');
-  const closeModal = document.querySelector('[data-action="close-create-modal"]');
+  const closeButtons = $$('[data-action="close-create-modal"]');
+  const setModalOpen = (isOpen) => {
+    if (!modal) return;
+    modal.classList.toggle('hidden', !isOpen);
+    document.body.classList.toggle('overflow-hidden', isOpen);
+  };
   openModal?.addEventListener('click', (event) => {
     event.preventDefault();
-    modal?.classList.remove('hidden');
+    setModalOpen(true);
   });
-  closeModal?.addEventListener('click', (event) => {
-    event.preventDefault();
-    modal?.classList.add('hidden');
+  closeButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      setModalOpen(false);
+    });
+  });
+  modal?.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      setModalOpen(false);
+    }
   });
   if (modal) {
     bindCreateRoom(modal);
@@ -304,7 +373,7 @@ const initJoinRoom = () => {
   joinButton?.addEventListener('click', () => {
     const code = readCode();
     if (!code) {
-      alert('Ingresá el código de mesa.');
+      showToast('Ingresá el código de mesa.', "info");
       return;
     }
     appState.pendingJoin = true;
@@ -448,19 +517,148 @@ const initMesa = () => {
   });
 };
 
-const initChips = () => {
+const renderChipHistory = (rows) => {
+  const historyEl = $('#chip-history');
+  if (!historyEl) return;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    historyEl.innerHTML = '<div class="text-white/40 text-xs uppercase tracking-widest">Sin movimientos recientes.</div>';
+    return;
+  }
+  historyEl.innerHTML = rows.map((row) => {
+    const amount = Number(row.amount);
+    const isPositive = amount >= 0;
+    const sign = isPositive ? "+" : "−";
+    const reasonMap = {
+      store_purchase: "Compra",
+      room_entry: "Entrada",
+      room_payout: "Premio"
+    };
+    const reason = reasonMap[row.reason] ?? row.reason?.replace(/_/g, " ") ?? "movimiento";
+    const date = row.createdAt ? new Date(row.createdAt).toLocaleString("es-AR") : "";
+    return `
+      <div class="flex items-center justify-between border-b border-white/5 py-3">
+        <div class="flex flex-col">
+          <span class="text-xs font-bold uppercase tracking-widest text-white/80">${reason}</span>
+          <span class="text-[10px] text-white/40">${date}</span>
+        </div>
+        <span class="text-sm font-black ${isPositive ? "text-primary" : "text-red-400"}">${sign}${formatNumber(Math.abs(amount))}</span>
+      </div>
+    `;
+  }).join("");
+};
+
+const initCajero = () => {
   const balanceEl = $('#chip-balance');
-  if (!balanceEl) return;
+  const historyEl = $('#chip-history');
   const refreshBalance = () => {
+    if (!balanceEl) return;
+    balanceEl.classList.add("animate-pulse");
     apiFetch('/api/chips/balance').then((data) => {
-      balanceEl.textContent = data.balance;
+      balanceEl.textContent = formatNumber(data.balance);
     }).catch(() => {
-      balanceEl.textContent = '--';
+      balanceEl.textContent = '0';
+    }).finally(() => {
+      balanceEl.classList.remove("animate-pulse");
+    });
+  };
+  const refreshHistory = () => {
+    if (!historyEl) return;
+    historyEl.innerHTML = '<div class="text-white/40 text-xs uppercase tracking-widest">Cargando movimientos...</div>';
+    apiFetch('/api/chips/history?limit=12').then((rows) => {
+      renderChipHistory(rows);
+    }).catch(() => {
+      historyEl.innerHTML = '<div class="text-white/40 text-xs uppercase tracking-widest">No se pudo cargar el historial.</div>';
     });
   };
   refreshBalance();
+  refreshHistory();
   if (appState.chipsInterval) clearInterval(appState.chipsInterval);
-  appState.chipsInterval = setInterval(refreshBalance, 10000);
+  appState.chipsInterval = setInterval(() => {
+    refreshBalance();
+    refreshHistory();
+  }, 15000);
+
+  const buyButtons = $$('[data-buy-amount]');
+  const checkoutModal = $('#checkout-modal');
+  const checkoutName = $('#checkout-pack-name');
+  const checkoutChips = $('#checkout-pack-chips');
+  const checkoutPrice = $('#checkout-pack-price');
+  const payButton = $('#checkout-pay');
+  const methodButtons = $$('[data-payment-method]');
+  const closeButtons = $$('[data-action="close-checkout"]');
+  let selectedAmount = 0;
+  let selectedMethod = null;
+
+  const setCheckoutOpen = (isOpen) => {
+    if (!checkoutModal) return;
+    checkoutModal.classList.toggle('hidden', !isOpen);
+    document.body.classList.toggle('overflow-hidden', isOpen);
+  };
+
+  buyButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const amount = Number(btn.getAttribute('data-buy-amount') || 0);
+      const packName = btn.getAttribute('data-pack-name') || 'Pack de fichas';
+      const packPrice = btn.getAttribute('data-pack-price') || '';
+      if (!amount) return;
+      selectedAmount = amount;
+      selectedMethod = null;
+      if (checkoutName) checkoutName.textContent = packName;
+      if (checkoutChips) checkoutChips.textContent = `${formatNumber(amount)} fichas`;
+      if (checkoutPrice) checkoutPrice.textContent = packPrice;
+      methodButtons.forEach((method) => {
+        method.classList.remove('border-gold/50', 'bg-gold/5');
+      });
+      if (payButton) {
+        payButton.setAttribute('disabled', 'true');
+        payButton.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+      setCheckoutOpen(true);
+    });
+  });
+
+  closeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => setCheckoutOpen(false));
+  });
+  checkoutModal?.addEventListener('click', (event) => {
+    if (event.target === checkoutModal) {
+      setCheckoutOpen(false);
+    }
+  });
+
+  methodButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.getAttribute('data-payment-disabled') === 'true') return;
+      selectedMethod = button.getAttribute('data-payment-method');
+      methodButtons.forEach((method) => {
+        method.classList.remove('border-gold/50', 'bg-gold/5');
+      });
+      button.classList.add('border-gold/50', 'bg-gold/5');
+      if (payButton) {
+        payButton.removeAttribute('disabled');
+        payButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    });
+  });
+
+  payButton?.addEventListener('click', async () => {
+    if (!selectedAmount || !selectedMethod) return;
+    payButton.setAttribute('disabled', 'true');
+    payButton.classList.add('opacity-50', 'cursor-not-allowed');
+    try {
+      await apiFetch('/api/chips/add', { method: 'POST', body: JSON.stringify({ amount: selectedAmount }) });
+      showToast("Compra confirmada", "success");
+      setCheckoutOpen(false);
+      refreshBalance();
+      refreshHistory();
+    } catch (err) {
+      console.error(err);
+      showToast("Error al procesar el pago", "error");
+    } finally {
+      payButton.removeAttribute('disabled');
+      payButton.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+  });
 };
 
 const initRanking = () => {
@@ -487,42 +685,34 @@ const initRanking = () => {
   });
 };
 
-const initStore = () => {
-  const buyButtons = $$('[data-buy-amount]');
-  const balanceEl = $('#chip-balance');
-  const refreshBalance = () => {
-    if (!balanceEl) return;
-    apiFetch('/api/chips/balance').then((data) => {
-      balanceEl.textContent = data.balance;
-    }).catch(() => {
-      balanceEl.textContent = '--';
-    });
+const initLanding = () => {
+  const balanceEl = $('#landing-chip-balance');
+  const roomsCountEl = $('#rooms-count');
+  const roomsLabelEl = $('#rooms-label');
+  const refreshLanding = () => {
+    if (roomsCountEl) {
+      roomsCountEl.textContent = "—";
+      apiFetch('/api/rooms').then((rooms) => {
+        const count = Array.isArray(rooms) ? rooms.length : 0;
+        roomsCountEl.textContent = formatNumber(count);
+        if (roomsLabelEl) {
+          roomsLabelEl.textContent = count === 1 ? "mesa activa" : "mesas activas";
+        }
+      }).catch(() => {
+        roomsCountEl.textContent = "0";
+      });
+    }
+    if (balanceEl && appState.token) {
+      apiFetch('/api/chips/balance').then((data) => {
+        balanceEl.textContent = formatNumber(data.balance);
+      }).catch(() => {
+        balanceEl.textContent = "0";
+      });
+    }
   };
-  if (balanceEl) {
-    refreshBalance();
-    if (appState.chipsInterval) clearInterval(appState.chipsInterval);
-    appState.chipsInterval = setInterval(refreshBalance, 10000);
-  }
-  if (!buyButtons.length) return;
-  buyButtons.forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const amount = Number(btn.getAttribute('data-buy-amount') || 0);
-      if (!amount) return;
-      btn.setAttribute("disabled", "true");
-      btn.classList.add("opacity-70");
-      try {
-        await apiFetch('/api/chips/add', { method: 'POST', body: JSON.stringify({ amount }) });
-        alert('Compra realizada.');
-        navigateTo('/fichas');
-      } catch (err) {
-        alert('No se pudo completar la compra.');
-        console.error(err);
-      } finally {
-        btn.removeAttribute("disabled");
-        btn.classList.remove("opacity-70");
-      }
-    });
-  });
+  refreshLanding();
+  if (appState.roomsInterval) clearInterval(appState.roomsInterval);
+  appState.roomsInterval = setInterval(refreshLanding, 15000);
 };
 
 const getPageFromPath = () => {
@@ -545,12 +735,12 @@ const initPage = async () => {
   }
   bindNavButtons();
   bindFallbackButtons();
+  if (page === 'landing') initLanding();
   if (page === 'lobby') initLobby();
   if (page === 'crear-mesa') initCreateRoom();
   if (page === 'unirse') initJoinRoom();
   if (page === 'mesa') initMesa();
-  if (page === 'fichas') initChips();
-  if (page === 'tienda') initStore();
+  if (page === 'fichas' || page === 'tienda') initCajero();
   if (page === 'ranking') initRanking();
   scheduleTeardown();
 };

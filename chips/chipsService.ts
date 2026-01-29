@@ -61,5 +61,20 @@ export const chipsService = {
     });
 
     return nextBalance;
+  },
+  history(userId: string, limit = 20): Array<{
+    id: string;
+    amount: number;
+    reason: string;
+    metadata?: string | null;
+    createdAt: string;
+  }> {
+    return chipsRepository.listTransactions(userId, limit).map((row) => ({
+      id: row.id,
+      amount: row.amount,
+      reason: row.reason,
+      metadata: row.metadata ?? undefined,
+      createdAt: row.created_at
+    }));
   }
 };

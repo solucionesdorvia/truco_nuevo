@@ -42,6 +42,9 @@ const screens = new Set([
   "unirse",
   "fichas",
   "tienda",
+  "faq",
+  "privacidad",
+  "terminos",
   "ranking",
   "comunidad",
   "soporte",
@@ -89,6 +92,16 @@ app.get("/api/chips/balance", requireUser, (req, res) => {
     const user = (req as AuthenticatedRequest).user;
     const balance = chipsService.getBalance(user.id);
     res.json({ balance });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+});
+
+app.get("/api/chips/history", requireUser, (req, res) => {
+  try {
+    const user = (req as AuthenticatedRequest).user;
+    const limit = Number.parseInt(req.query.limit?.toString() ?? "20", 10);
+    res.json(chipsService.history(user.id, Number.isFinite(limit) ? limit : 20));
   } catch (error) {
     res.status(400).json({ error: (error as Error).message });
   }

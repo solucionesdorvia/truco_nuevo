@@ -19,5 +19,22 @@ export const chipsRepository = {
       params.metadata ?? null,
       params.createdAt
     );
+  },
+  listTransactions(userId: string, limit = 20): Array<{
+    id: string;
+    amount: number;
+    reason: string;
+    metadata?: string | null;
+    created_at: string;
+  }> {
+    return db.prepare(
+      "SELECT id, amount, reason, metadata, created_at FROM chips_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ?"
+    ).all(userId, limit) as Array<{
+      id: string;
+      amount: number;
+      reason: string;
+      metadata?: string | null;
+      created_at: string;
+    }>;
   }
 };
