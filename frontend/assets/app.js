@@ -21,6 +21,28 @@ const formatNumber = (value) => {
   return numberValue.toLocaleString("es-AR");
 };
 
+const applyChipSummary = (summary) => {
+  if (!summary) return;
+  $$('[data-chip-balance]').forEach((el) => {
+    el.textContent = formatNumber(summary.balance ?? 0);
+  });
+  $$('[data-bonus-available]').forEach((el) => {
+    el.textContent = formatNumber(summary.bonusAvailable ?? 0);
+  });
+  $$('[data-bonus-locked]').forEach((el) => {
+    el.textContent = formatNumber(summary.bonusLocked ?? 0);
+  });
+};
+
+const refreshChipSummary = () => {
+  return apiFetch('/api/chips/summary')
+    .then((summary) => {
+      applyChipSummary(summary);
+      return summary;
+    })
+    .catch(() => null);
+};
+
 const ensureToastContainer = () => {
   let container = $("#toast-container");
   if (!container) {
@@ -185,7 +207,7 @@ const bindSocketOnce = (socket, event, handler) => {
 const protectRoute = () => {
   const storedToken = localStorage.getItem("truco_token");
   const page = document.body.dataset.page || getPageFromPath();
-  const publicPages = new Set(["landing", "faq", "privacidad", "terminos", "soporte"]);
+  const publicPages = new Set(["landing", "faq", "privacidad", "terminos", "soporte", "bases"]);
   if (!storedToken && !publicPages.has(page)) {
     navigateTo("/landing");
     return false;
@@ -531,6 +553,9 @@ const renderChipHistory = (rows) => {
     const sign = isPositive ? "+" : "−";
     const reasonMap = {
       store_purchase: "Compra",
+      deposit: "Depósito",
+      bonus_locked_referral: "Bono bloqueado",
+      bonus_unlocked: "Bono habilitado",
       room_entry: "Entrada",
       room_payout: "Premio"
     };
@@ -549,18 +574,9 @@ const renderChipHistory = (rows) => {
 };
 
 const initCajero = () => {
-  const balanceEl = $('#chip-balance');
   const historyEl = $('#chip-history');
   const refreshBalance = () => {
-    if (!balanceEl) return;
-    balanceEl.classList.add("animate-pulse");
-    apiFetch('/api/chips/balance').then((data) => {
-      balanceEl.textContent = formatNumber(data.balance);
-    }).catch(() => {
-      balanceEl.textContent = '0';
-    }).finally(() => {
-      balanceEl.classList.remove("animate-pulse");
-    });
+    refreshChipSummary();
   };
   const refreshHistory = () => {
     if (!historyEl) return;
@@ -584,7 +600,8 @@ const initCajero = () => {
   const checkoutName = $('#checkout-pack-name');
   const checkoutChips = $('#checkout-pack-chips');
   const checkoutPrice = $('#checkout-pack-price');
-  const dniInput = $('#checkout-dni');
+  const nameInput = $('#checkout-name');
+  const surnameInput = $('#checkout-surname');
   const confirmButton = $('#checkout-confirm');
   const closeButtons = $$('[data-action="close-checkout"]');
   let selectedAmount = 0;
@@ -602,7 +619,8 @@ const initCajero = () => {
       const packPrice = btn.getAttribute('data-pack-price') || '';
       if (!amount) return;
       selectedAmount = amount;
-      if (dniInput) dniInput.value = "";
+      if (nameInput) nameInput.value = "";
+      if (surnameInput) surnameInput.value = "";
       if (checkoutName) checkoutName.textContent = packName;
       if (checkoutChips) checkoutChips.textContent = `${formatNumber(amount)} fichas`;
       if (checkoutPrice) checkoutPrice.textContent = packPrice;
@@ -623,26 +641,39 @@ const initCajero = () => {
     }
   });
 
-  const validateDni = (value) => /^[0-9]{7,8}$/.test(value);
-  dniInput?.addEventListener('input', () => {
+  const validateName = (value) => value.trim().length >= 2;
+  const validateSurname = (value) => value.trim().length >= 2;
+  const updateConfirmState = () => {
     if (!confirmButton) return;
-    const valid = validateDni(dniInput.value.trim());
+    const valid = validateName(nameInput?.value ?? "") && validateSurname(surnameInput?.value ?? "");
     confirmButton.toggleAttribute('disabled', !valid);
     confirmButton.classList.toggle('opacity-50', !valid);
     confirmButton.classList.toggle('cursor-not-allowed', !valid);
-  });
+  };
+  nameInput?.addEventListener('input', updateConfirmState);
+  surnameInput?.addEventListener('input', updateConfirmState);
 
   confirmButton?.addEventListener('click', async () => {
     if (!selectedAmount) return;
-    const dniValue = dniInput?.value.trim() ?? "";
-    if (!validateDni(dniValue)) {
-      showToast("Ingresá un DNI válido", "info");
+    const nameValue = nameInput?.value.trim() ?? "";
+    const surnameValue = surnameInput?.value.trim() ?? "";
+    if (!validateName(nameValue) || !validateSurname(surnameValue)) {
+      showToast("Completá nombre y apellido", "info");
       return;
     }
     confirmButton.setAttribute('disabled', 'true');
     confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
     try {
-      await apiFetch('/api/chips/add', { method: 'POST', body: JSON.stringify({ amount: selectedAmount }) });
+      await apiFetch('/api/chips/add', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: selectedAmount,
+          metadata: {
+            payerName: nameValue,
+            payerSurname: surnameValue
+          }
+        })
+      });
       showToast("Transferencia en revisión", "success");
       setCheckoutOpen(false);
       refreshBalance();
@@ -678,6 +709,63 @@ const initRanking = () => {
     }).join('');
   }).catch(() => {
     list.innerHTML = '<div class="text-white/50">No hay ranking disponible.</div>';
+  });
+};
+
+const initProfileHeader = () => {
+  const roots = $$('[data-profile-root]');
+  if (!roots.length) return;
+  const closePanels = () => {
+    $$('[data-profile-panel]').forEach((panel) => panel.classList.add('hidden'));
+  };
+  roots.forEach((root) => {
+    const toggle = root.querySelector('[data-profile-toggle]');
+    const panel = root.querySelector('[data-profile-panel]');
+    toggle?.addEventListener('click', (event) => {
+      event.preventDefault();
+      const willOpen = panel?.classList.contains('hidden');
+      closePanels();
+      panel?.classList.toggle('hidden', !willOpen);
+    });
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-profile-root]')) {
+      closePanels();
+    }
+  });
+  refreshChipSummary();
+  apiFetch('/api/users/me').then((user) => {
+    $$('[data-user-name]').forEach((el) => {
+      el.textContent = user.username || 'Jugador';
+    });
+    $$('[data-invite-code]').forEach((el) => {
+      el.textContent = user.inviteCode || '—';
+    });
+  }).catch(() => {
+    // ignore header load failures
+  });
+};
+
+const initCommunity = () => {
+  const applyButton = $('[data-action="apply-invite"]');
+  const codeInput = $('[data-invite-input]');
+  applyButton?.addEventListener('click', async () => {
+    const code = (codeInput?.value || '').trim().toUpperCase();
+    if (!code) {
+      showToast("Ingresá un código válido", "info");
+      return;
+    }
+    try {
+      await apiFetch('/api/referral/apply', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      });
+      showToast("Código aplicado. El bono se acredita con tu primer depósito.", "success");
+      if (codeInput) codeInput.value = "";
+    } catch (err) {
+      console.error(err);
+      showToast("No se pudo aplicar el código.", "error");
+    }
   });
 };
 
@@ -731,6 +819,7 @@ const initPage = async () => {
   }
   bindNavButtons();
   bindFallbackButtons();
+  initProfileHeader();
   if (page === 'landing') initLanding();
   if (page === 'lobby') initLobby();
   if (page === 'crear-mesa') initCreateRoom();
@@ -738,6 +827,7 @@ const initPage = async () => {
   if (page === 'mesa') initMesa();
   if (page === 'fichas' || page === 'tienda') initCajero();
   if (page === 'ranking') initRanking();
+  if (page === 'comunidad') initCommunity();
   scheduleTeardown();
 };
 

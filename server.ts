@@ -42,6 +42,7 @@ const screens = new Set([
   "unirse",
   "fichas",
   "tienda",
+  "bases",
   "faq",
   "privacidad",
   "terminos",
@@ -83,7 +84,10 @@ app.get("/api/users/me", requireUser, (req, res) => {
   res.json({
     id: user.id,
     username: user.username,
-    chips: user.chips
+    chips: user.chips,
+    bonusChips: user.bonusChips,
+    bonusLocked: user.bonusLocked,
+    inviteCode: user.inviteCode
   });
 });
 
@@ -107,6 +111,15 @@ app.get("/api/chips/history", requireUser, (req, res) => {
   }
 });
 
+app.get("/api/chips/summary", requireUser, (req, res) => {
+  try {
+    const user = (req as AuthenticatedRequest).user;
+    res.json(chipsService.getSummary(user.id));
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+});
+
 app.post("/api/chips/add", requireUser, (req, res) => {
   try {
     const user = (req as AuthenticatedRequest).user;
@@ -114,8 +127,38 @@ app.post("/api/chips/add", requireUser, (req, res) => {
     if (!Number.isFinite(amount) || amount <= 0) {
       return res.status(400).json({ error: "Invalid amount" });
     }
-    const balance = chipsService.credit(user.id, amount, "store_purchase");
-    res.json({ balance });
+    const metadata = req.body?.metadata && typeof req.body.metadata === "object"
+      ? req.body.metadata
+      : undefined;
+    const summary = chipsService.deposit(user.id, amount, metadata);
+    res.json(summary);
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+});
+
+app.post("/api/referral/apply", requireUser, (req, res) => {
+  try {
+    const user = (req as AuthenticatedRequest).user;
+    const code = String(req.body?.code ?? "").trim().toUpperCase();
+    if (!code) {
+      return res.status(400).json({ error: "Invalid code" });
+    }
+    if (user.inviteCode && code === user.inviteCode) {
+      return res.status(400).json({ error: "Cannot use your own code" });
+    }
+    if (user.referredBy) {
+      return res.status(400).json({ error: "Referral already set" });
+    }
+    const referrer = userService.getByInviteCode(code);
+    if (!referrer) {
+      return res.status(404).json({ error: "Code not found" });
+    }
+    if (referrer.id === user.id) {
+      return res.status(400).json({ error: "Invalid referral" });
+    }
+    userService.setReferral(user.id, referrer.id);
+    res.json({ ok: true });
   } catch (error) {
     res.status(400).json({ error: (error as Error).message });
   }

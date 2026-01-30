@@ -20,6 +20,12 @@ db.exec(`
     id TEXT PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
     chips INTEGER NOT NULL DEFAULT 0,
+    bonus_chips INTEGER NOT NULL DEFAULT 0,
+    bonus_locked INTEGER NOT NULL DEFAULT 0,
+    deposits_total INTEGER NOT NULL DEFAULT 0,
+    invite_code TEXT UNIQUE,
+    referred_by TEXT,
+    referral_bonus_given INTEGER NOT NULL DEFAULT 0,
     token TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL
   );
@@ -72,5 +78,19 @@ db.exec(`
     FOREIGN KEY(user_id) REFERENCES users(id)
   );
 `);
+
+const ensureColumn = (table: string, column: string, definition: string) => {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+  if (!columns.some((col) => col.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+};
+
+ensureColumn("users", "bonus_chips", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "bonus_locked", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "deposits_total", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "invite_code", "TEXT UNIQUE");
+ensureColumn("users", "referred_by", "TEXT");
+ensureColumn("users", "referral_bonus_given", "INTEGER NOT NULL DEFAULT 0");
 
 export default db;

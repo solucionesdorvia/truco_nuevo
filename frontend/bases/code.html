@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00c288",
+                        "background-dark": "#07120e",
+                        "gold": "#d4af37",
+                        "felt-green": "#0a1f16",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Serif", "serif"],
+                        "sans": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .felt-texture {
+            background-color: theme("colors.background-dark");
+            background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%), url(https://lh3.googleusercontent.com/aida-public/AB6AXuCEYXGoi6eGzJ5Ei7yIv7kQfsbwxa9QIhjc7O8xmyQK_xehplXMpHa-HgY2e44WvG6N9WSE8nK74vipU0wbysEbl0nzLgwbPh624UeWVOK-m-OpOum8ijASh7JqUzN5y4cOF44JUh6sgltAK8G4Y_SgKWgEk22O4mBD637wm-S6S-s9-iPFrvN6Pnw23OqPdmwrqXqrxM4iD4oB4aIsST2C8urCQVZGJ8ZUHrfRI9WyXr6WlqL1_VoXxdEw4MnxeR6uLd_NiJtGFhE);
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+        }
+        .glass-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .gold-glow {
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+        .tap-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+    </style>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/assets/app.js" defer></script>
+</head>
+<body class="bg-background-dark felt-texture font-sans text-white min-h-screen selection:bg-gold/30" data-page="bases">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 w-full border-b border-white/5 bg-black/40 backdrop-blur-xl px-4 md:px-40 py-3">
+<div class="mx-auto flex max-w-[1200px] items-center justify-between">
+<div class="flex items-center gap-6">
+<a class="tap-target flex items-center justify-center text-gold hover:scale-110 transition-transform" href="/soporte">
+<span class="material-symbols-outlined text-[32px]">arrow_back</span>
+</a>
+<div class="flex flex-col">
+<h1 class="font-display text-3xl font-black text-white gold-glow">Bases y Condiciones</h1>
+<span class="text-xs font-bold tracking-widest uppercase text-primary/70">Bonos y transacciones</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 md:px-40 py-8">
+<div class="mx-auto max-w-[800px] flex flex-col gap-6">
+<div class="glass-card rounded-2xl p-6">
+<h2 class="font-display text-xl font-bold text-white mb-3">Bonos</h2>
+<ul class="text-sm text-white/70 space-y-2">
+<li>Los bonos se acreditan como fichas de bono y no son retirables de forma directa.</li>
+<li>El bono queda bloqueado y se habilita cuando el usuario deposita el mismo monto.</li>
+<li>Las fichas de bono pueden utilizarse para jugar en mesas habilitadas.</li>
+</ul>
+</div>
+<div class="glass-card rounded-2xl p-6">
+<h2 class="font-display text-xl font-bold text-white mb-3">Depósitos</h2>
+<ul class="text-sm text-white/70 space-y-2">
+<li>Las transferencias se validan manualmente.</li>
+<li>La acreditación puede demorar hasta 2 horas desde la confirmación del envío.</li>
+<li>Si hay inconsistencias, soporte puede solicitar información adicional.</li>
+</ul>
+</div>
+<div class="glass-card rounded-2xl p-6">
+<h2 class="font-display text-xl font-bold text-white mb-3">Código de invitación</h2>
+<ul class="text-sm text-white/70 space-y-2">
+<li>El bono por invitación se activa con el primer depósito válido.</li>
+<li>El bono se acredita en fichas bloqueadas y se habilita al depositar el mismo monto.</li>
+</ul>
+</div>
+</div>
+</main>
+</div>
+</body></html>

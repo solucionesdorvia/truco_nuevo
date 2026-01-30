@@ -91,14 +91,33 @@
 <span class="text-xs font-bold tracking-widest uppercase opacity-80">Ranking Global</span>
 </div>
 </div>
-<div class="flex items-center gap-6">
-<div class="flex flex-col items-end mr-2">
-<span class="text-[10px] text-white/40 font-bold uppercase tracking-widest">Mis Puntos</span>
-<span class="text-sm font-bold text-gold">14.250 pts</span>
-</div>
-<div class="relative">
-<div class="size-11 rounded-full border-2 border-gold/50 p-0.5 bg-background-dark overflow-hidden ring-4 ring-gold/5">
+<div class="relative" data-profile-root>
+<button class="flex items-center gap-2 bg-black/40 rounded-full px-3 py-1.5 border border-white/10 hover:border-gold/40 transition-all" data-profile-toggle>
+<span class="text-xs font-black text-gold" data-chip-balance>—</span>
+<svg aria-hidden="true" class="w-4 h-4 text-gold" viewBox="0 0 24 24" fill="currentColor">
+<path d="M12 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path>
+<path d="M6 14h12v4H6z" opacity="0.5"></path>
+</svg>
+<div class="size-8 rounded-full border border-gold/30 p-0.5 bg-background-dark overflow-hidden">
 <img alt="Avatar" class="h-full w-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVP_neO9MrjRf8ytvH6OssJED_7RvXxRAYD7_mJdASgdsY3ds5dMVPalaSO-p42x-zBeEkxgXpeupDhL6lf0jfcVfD5y8YRAbB002nEfUYYOHhgBaIqAoMu1MmjZUYZ2M6cbAVWS0LFOuALCPNTNsDpjG-q77SlOgD2UklUL0srbxwpOoGw_MwGsUOvDZZGw7IRYdP9N4KsN6_Cqmomi2UtSu5WWJHxix-amI-YCF05WwVJw7fIVPnbVvXxnOYLF27dig67neuWw"/>
+</div>
+</button>
+<div class="hidden absolute right-0 mt-3 w-64 glass-card rounded-2xl p-4 border-gold/20" data-profile-panel>
+<div class="text-[10px] uppercase tracking-widest text-white/40">Perfil</div>
+<div class="text-sm font-bold text-white mt-1" data-user-name>Jugador</div>
+<div class="mt-3 space-y-2 text-sm text-white/80">
+<div class="flex items-center justify-between">
+<span>Fichas</span>
+<span class="font-bold text-gold" data-chip-balance>—</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Fichas de bono</span>
+<span class="font-bold text-primary" data-bonus-available>—</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Bloqueadas</span>
+<span class="font-bold text-white/70" data-bonus-locked>—</span>
+</div>
 </div>
 </div>
 </div>
@@ -123,6 +142,30 @@
 <input class="hidden" name="tab" type="radio"/>
 <span class="font-bold text-[10px] md:text-xs uppercase tracking-widest">Mis Logros</span>
 </label>
+ </div>
+<div class="glass-card rounded-2xl p-5 border-gold/10">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-sm font-black uppercase tracking-widest text-white/70">Ranking semanal</h3>
+<p class="text-[10px] text-white/40 uppercase tracking-[0.2em] mt-1">Cierre domingo 00:00</p>
+</div>
+<span class="text-[10px] font-bold text-primary uppercase">Premios en fichas de bono</span>
+</div>
+<div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+<div class="flex items-center justify-between rounded-xl border border-gold/20 bg-gold/5 px-4 py-3">
+<span class="font-bold text-gold">#1</span>
+<span class="font-black text-white">50.000</span>
+</div>
+<div class="flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+<span class="font-bold text-white/70">#2</span>
+<span class="font-black text-white">25.000</span>
+</div>
+<div class="flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+<span class="font-bold text-white/70">#3</span>
+<span class="font-black text-white">10.000</span>
+</div>
+</div>
+<p class="text-[10px] text-white/40 mt-4">Los premios se acreditan como fichas de bono y se habilitan al depositar el mismo monto.</p>
 </div>
 <div class="flex items-end justify-center gap-4 md:gap-12 pt-12 pb-6">
 <div class="flex flex-col items-center gap-3">
@@ -256,22 +299,22 @@
 </main>
 <nav class="fixed bottom-6 z-50 left-1/2 -translate-x-1/2 w-full max-w-sm px-4">
 <div class="flex items-center justify-between rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/10 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all group relative" href="/ranking">
-<div class="absolute inset-0 bg-gold/10 blur-md rounded-xl"></div>
-<span class="material-symbols-outlined text-gold gold-glow relative z-10">trophy</span>
-<span class="text-[10px] font-black text-gold uppercase mt-1 relative z-10 tracking-tighter">Ligas</span>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/comunidad">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">groups</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Comunidad</span>
 </a>
 <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/fichas">
 <span class="material-symbols-outlined group-hover:scale-110 transition-transform">account_balance_wallet</span>
-<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Cajero</span>
+<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Fichas</span>
 </a>
 <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/lobby">
 <span class="material-symbols-outlined group-hover:scale-110 transition-transform">style</span>
 <span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Jugar</span>
 </a>
-<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/comunidad">
-<span class="material-symbols-outlined group-hover:scale-110 transition-transform">groups</span>
-<span class="text-[10px] font-bold uppercase mt-1 tracking-tighter">Social</span>
+<a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all group relative" href="/ranking">
+<div class="absolute inset-0 bg-gold/10 blur-md rounded-xl"></div>
+<span class="material-symbols-outlined text-gold gold-glow relative z-10">trophy</span>
+<span class="text-[10px] font-black text-gold uppercase mt-1 relative z-10 tracking-tighter">Ranking</span>
 </a>
 <a class="flex flex-col items-center justify-center w-16 h-14 rounded-xl text-white/30 hover:text-white transition-all group" href="/soporte">
 <span class="material-symbols-outlined group-hover:scale-110 transition-transform">support_agent</span>
