@@ -10,7 +10,8 @@ const appState = {
   latestGame: null,
   chipsInterval: null,
   roomsInterval: null,
-  toastTimeout: null
+  toastTimeout: null,
+  onRoomCreated: null
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -303,6 +304,7 @@ const bindCreateRoom = (root = document, onCreated) => {
   const createButton = root.querySelector('[data-action="create-room"]');
   if (!createButton) return;
   const socket = connectSocket();
+  appState.onRoomCreated = typeof onCreated === "function" ? onCreated : null;
 
   createButton.addEventListener('click', () => {
     const privacy = root.querySelector('input[name="privacy"]:checked')?.value || 'public';
@@ -323,14 +325,22 @@ const bindCreateRoom = (root = document, onCreated) => {
     socket.emit('rooms:create', { config });
   });
 
-  bindSocketOnce(socket, 'room:state', (room) => {
-    appState.latestRoom = room;
-    if (appState.pendingCreate) {
-      appState.pendingCreate = false;
-      if (onCreated) onCreated();
-      navigateTo(`/mesa/${room.id}`);
+};
+
+const handleRoomState = (room) => {
+  appState.latestRoom = room;
+  if (appState.pendingCreate) {
+    appState.pendingCreate = false;
+    if (appState.onRoomCreated) {
+      appState.onRoomCreated();
     }
-  });
+    navigateTo(`/mesa/${room.id}`);
+    return;
+  }
+  if (appState.pendingJoin) {
+    appState.pendingJoin = false;
+    navigateTo(`/mesa/${room.id}`);
+  }
 };
 
 const initLobby = () => {
@@ -366,19 +376,15 @@ const initLobby = () => {
   if (modal) {
     bindCreateRoom(modal, () => setModalOpen(false));
   }
-  bindSocketOnce(socket, 'room:state', (room) => {
-    appState.latestRoom = room;
-    if (appState.pendingJoin) {
-      appState.pendingJoin = false;
-      navigateTo(`/mesa/${room.id}`);
-    }
-  });
+  bindSocketOnce(socket, 'room:state', handleRoomState);
   socket.off('connect');
   socket.on('connect', () => socket.emit('rooms:list'));
 };
 
 const initCreateRoom = () => {
+  const socket = connectSocket();
   bindCreateRoom(document);
+  bindSocketOnce(socket, 'room:state', handleRoomState);
 };
 
 const initJoinRoom = () => {
