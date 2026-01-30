@@ -19,6 +19,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
+    password_hash TEXT,
     chips INTEGER NOT NULL DEFAULT 0,
     bonus_chips INTEGER NOT NULL DEFAULT 0,
     bonus_locked INTEGER NOT NULL DEFAULT 0,
@@ -92,5 +93,6 @@ ensureColumn("users", "deposits_total", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("users", "invite_code", "TEXT UNIQUE");
 ensureColumn("users", "referred_by", "TEXT");
 ensureColumn("users", "referral_bonus_given", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "password_hash", "TEXT");
 
 export default db;

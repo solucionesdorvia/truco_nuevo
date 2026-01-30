@@ -4,6 +4,7 @@ import { User } from "./types";
 const mapRow = (row: any): User => ({
   id: row.id,
   username: row.username,
+  passwordHash: row.password_hash ?? null,
   chips: row.chips,
   bonusChips: row.bonus_chips ?? 0,
   bonusLocked: row.bonus_locked ?? 0,
@@ -18,11 +19,12 @@ const mapRow = (row: any): User => ({
 export const userRepository = {
   create(user: User): User {
     const stmt = db.prepare(
-      "INSERT INTO users (id, username, chips, bonus_chips, bonus_locked, deposits_total, invite_code, referred_by, referral_bonus_given, token, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO users (id, username, password_hash, chips, bonus_chips, bonus_locked, deposits_total, invite_code, referred_by, referral_bonus_given, token, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     stmt.run(
       user.id,
       user.username,
+      user.passwordHash,
       user.chips,
       user.bonusChips,
       user.bonusLocked,
@@ -43,6 +45,11 @@ export const userRepository = {
 
   findById(id: string): User | null {
     const row = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+    return row ? mapRow(row) : null;
+  },
+
+  findByUsername(username: string): User | null {
+    const row = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
     return row ? mapRow(row) : null;
   },
 
@@ -67,5 +74,9 @@ export const userRepository = {
 
   markReferralBonusGiven(id: string): void {
     db.prepare("UPDATE users SET referral_bonus_given = 1 WHERE id = ?").run(id);
+  },
+
+  updateToken(id: string, token: string): void {
+    db.prepare("UPDATE users SET token = ? WHERE id = ?").run(token, id);
   }
 };

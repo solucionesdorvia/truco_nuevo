@@ -138,6 +138,29 @@ export const chipsService = {
       userRepository.markReferralBonusGiven(userId);
     }
 
+    if (user.referredBy) {
+      const referrer = userRepository.findById(user.referredBy);
+      if (referrer) {
+        const percentBonus = Math.floor(amount * 0.01);
+        if (percentBonus > 0) {
+          userRepository.updateBonus(
+            referrer.id,
+            referrer.bonusChips + percentBonus,
+            referrer.bonusLocked,
+            referrer.depositsTotal
+          );
+          chipsRepository.recordTransaction({
+            id: uuid(),
+            userId: referrer.id,
+            amount: percentBonus,
+            reason: "bonus_referral_percent",
+            metadata: JSON.stringify({ source: "referral_percent", userId }),
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
+    }
+
     if (bonusLocked > 0 && nextDepositsTotal >= bonusLocked) {
       bonusAvailable += bonusLocked;
       chipsRepository.recordTransaction({

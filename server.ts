@@ -37,6 +37,7 @@ roomService.loadOpenRooms();
 const frontendPath = path.join(process.cwd(), "frontend");
 const screens = new Set([
   "landing",
+  "registro",
   "lobby",
   "crear-mesa",
   "unirse",
@@ -69,6 +70,39 @@ app.post("/api/users", (req, res) => {
   try {
     const user = userService.createUser(req.body?.username ?? "");
     res.status(201).json({
+      id: user.id,
+      username: user.username,
+      token: user.token,
+      chips: user.chips
+    });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+});
+
+app.post("/api/auth/register", (req, res) => {
+  try {
+    const username = String(req.body?.username ?? "");
+    const password = String(req.body?.password ?? "");
+    const inviteCode = req.body?.inviteCode ? String(req.body.inviteCode) : null;
+    const user = userService.registerUser(username, password, inviteCode);
+    res.status(201).json({
+      id: user.id,
+      username: user.username,
+      token: user.token,
+      chips: user.chips
+    });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+});
+
+app.post("/api/auth/login", (req, res) => {
+  try {
+    const username = String(req.body?.username ?? "");
+    const password = String(req.body?.password ?? "");
+    const user = userService.login(username, password);
+    res.json({
       id: user.id,
       username: user.username,
       token: user.token,

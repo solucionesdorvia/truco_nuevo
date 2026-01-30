@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   username: string;
+  passwordHash: string | null;
   chips: number;
   bonusChips: number;
   bonusLocked: number;

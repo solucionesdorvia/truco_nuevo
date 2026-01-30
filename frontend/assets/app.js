@@ -11,7 +11,13 @@ const appState = {
   chipsInterval: null,
   roomsInterval: null,
   toastTimeout: null,
-  onRoomCreated: null
+  onRoomCreated: null,
+  roomsList: [],
+  roomFilters: {
+    mode: "all",
+    economy: "all",
+    order: "recent"
+  }
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -106,24 +112,13 @@ const ensureUser = async () => {
     } catch (_err) {
       localStorage.removeItem("truco_token");
       localStorage.removeItem("truco_user_id");
+      localStorage.removeItem("truco_username");
+      appState.token = null;
+      appState.userId = null;
+      appState.username = null;
     }
   }
-
-  const fallbackName = storedUsername || `Jugador${Math.floor(1000 + Math.random() * 9000)}`;
-  const payload = { username: fallbackName };
-  try {
-    const user = await apiFetch("/api/users", { method: "POST", body: JSON.stringify(payload) });
-    appState.token = user.token;
-    appState.userId = user.id;
-    appState.username = user.username;
-    localStorage.setItem("truco_token", user.token);
-    localStorage.setItem("truco_user_id", user.id);
-    localStorage.setItem("truco_username", user.username);
-    return true;
-  } catch (err) {
-    console.error("Failed to create user", err);
-    return false;
-  }
+  return false;
 };
 
 const connectSocket = () => {
@@ -187,10 +182,13 @@ const bindFallbackButtons = () => {
     if (
       button.dataset.nav ||
       button.dataset.action ||
+      button.dataset.authTab ||
       button.dataset.joinRoom ||
       button.dataset.buyAmount ||
       button.dataset.paymentMethod ||
       button.dataset.playCard ||
+      button.id === 'register-submit' ||
+      button.id === 'login-submit' ||
       (button.id && button.id.startsWith('btn-'))
     ) {
       return;
@@ -208,9 +206,9 @@ const bindSocketOnce = (socket, event, handler) => {
 const protectRoute = () => {
   const storedToken = localStorage.getItem("truco_token");
   const page = document.body.dataset.page || getPageFromPath();
-  const publicPages = new Set(["landing", "faq", "privacidad", "terminos", "soporte", "bases"]);
+  const publicPages = new Set(["landing", "registro", "faq", "privacidad", "terminos", "soporte", "bases"]);
   if (!storedToken && !publicPages.has(page)) {
-    navigateTo("/landing");
+    navigateTo("/registro");
     return false;
   }
   return true;
@@ -221,12 +219,30 @@ const formatRoomMode = (room) => `${room.mode} · ${room.points} pts`;
 const renderRooms = (rooms) => {
   const container = $("#rooms-list");
   if (!container) return;
-  if (!Array.isArray(rooms) || !rooms.length) {
+  appState.roomsList = Array.isArray(rooms) ? rooms : [];
+  const filters = appState.roomFilters;
+  let filtered = appState.roomsList.slice();
+  if (filters.mode !== "all") {
+    filtered = filtered.filter((room) => room.mode === filters.mode);
+  }
+  if (filters.economy !== "all") {
+    filtered = filtered.filter((room) => room.economy === filters.economy);
+  }
+  if (filters.order === "entry_high") {
+    filtered.sort((a, b) => (b.entryFee ?? 0) - (a.entryFee ?? 0));
+  }
+  if (filters.order === "entry_low") {
+    filtered.sort((a, b) => (a.entryFee ?? 0) - (b.entryFee ?? 0));
+  }
+  if (filters.order === "players") {
+    filtered.sort((a, b) => (b.members?.length ?? 0) - (a.members?.length ?? 0));
+  }
+  if (!filtered.length) {
     container.innerHTML = '<div class="glass-card rounded-2xl p-6 text-white/60">No hay mesas disponibles.</div>';
     return;
   }
 
-  container.innerHTML = rooms.map((room) => {
+  container.innerHTML = filtered.map((room) => {
     const isPrivate = room.privacy === "private";
     const teamSize = room.mode === "1v1" ? 1 : room.mode === "2v2" ? 2 : 3;
     const countA = room.members.filter((m) => m.team === "A").length;
@@ -327,6 +343,32 @@ const bindCreateRoom = (root = document, onCreated) => {
 
 };
 
+const initLobbyFilters = () => {
+  const buttons = $$('[data-filter]');
+  if (!buttons.length) return;
+  const updateActive = () => {
+    buttons.forEach((btn) => {
+      const type = btn.dataset.filter;
+      const value = btn.dataset.value;
+      const isActive = type && value && appState.roomFilters[type] === value;
+      btn.classList.toggle('bg-gold/20', isActive);
+      btn.classList.toggle('text-gold', isActive);
+      btn.classList.toggle('border-gold/30', isActive);
+    });
+  };
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.filter;
+      const value = btn.dataset.value;
+      if (!type || !value) return;
+      appState.roomFilters[type] = value;
+      updateActive();
+      renderRooms(appState.roomsList);
+    });
+  });
+  updateActive();
+};
+
 const handleRoomState = (room) => {
   appState.latestRoom = room;
   if (appState.pendingCreate) {
@@ -348,6 +390,7 @@ const initLobby = () => {
   socket.emit('rooms:list');
   bindSocketOnce(socket, 'rooms:list', renderRooms);
   bindSocketOnce(socket, 'rooms:update', renderRooms);
+  initLobbyFilters();
   const refresh = document.querySelector('[data-action="refresh-rooms"]');
   refresh?.addEventListener('click', () => socket.emit('rooms:list'));
   const modal = document.querySelector('#create-modal');
@@ -561,6 +604,7 @@ const renderChipHistory = (rows) => {
       store_purchase: "Compra",
       deposit: "Depósito",
       bonus_locked_referral: "Bono bloqueado",
+      bonus_referral_percent: "Bono invitado 1%",
       bonus_unlocked: "Bono habilitado",
       room_entry: "Entrada",
       room_payout: "Premio"
@@ -608,6 +652,7 @@ const initCajero = () => {
   const checkoutPrice = $('#checkout-pack-price');
   const nameInput = $('#checkout-name');
   const surnameInput = $('#checkout-surname');
+  const proofInput = $('#checkout-proof');
   const confirmButton = $('#checkout-confirm');
   const closeButtons = $$('[data-action="close-checkout"]');
   let selectedAmount = 0;
@@ -627,6 +672,7 @@ const initCajero = () => {
       selectedAmount = amount;
       if (nameInput) nameInput.value = "";
       if (surnameInput) surnameInput.value = "";
+      if (proofInput) proofInput.value = "";
       if (checkoutName) checkoutName.textContent = packName;
       if (checkoutChips) checkoutChips.textContent = `${formatNumber(amount)} fichas`;
       if (checkoutPrice) checkoutPrice.textContent = packPrice;
@@ -649,34 +695,59 @@ const initCajero = () => {
 
   const validateName = (value) => value.trim().length >= 2;
   const validateSurname = (value) => value.trim().length >= 2;
+  const hasProof = () => Boolean(proofInput?.files?.length);
   const updateConfirmState = () => {
     if (!confirmButton) return;
-    const valid = validateName(nameInput?.value ?? "") && validateSurname(surnameInput?.value ?? "");
+    const valid =
+      validateName(nameInput?.value ?? "") &&
+      validateSurname(surnameInput?.value ?? "") &&
+      hasProof();
     confirmButton.toggleAttribute('disabled', !valid);
     confirmButton.classList.toggle('opacity-50', !valid);
     confirmButton.classList.toggle('cursor-not-allowed', !valid);
   };
   nameInput?.addEventListener('input', updateConfirmState);
   surnameInput?.addEventListener('input', updateConfirmState);
+  proofInput?.addEventListener('change', updateConfirmState);
+
+  const readProofData = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("File read failed"));
+    reader.readAsDataURL(file);
+  });
 
   confirmButton?.addEventListener('click', async () => {
     if (!selectedAmount) return;
     const nameValue = nameInput?.value.trim() ?? "";
     const surnameValue = surnameInput?.value.trim() ?? "";
+    const proofFile = proofInput?.files?.[0];
     if (!validateName(nameValue) || !validateSurname(surnameValue)) {
       showToast("Completá nombre y apellido", "info");
+      return;
+    }
+    if (!proofFile) {
+      showToast("Adjuntá el comprobante", "info");
       return;
     }
     confirmButton.setAttribute('disabled', 'true');
     confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
     try {
+      let proofData = null;
+      if (proofFile.size <= 1024 * 1024) {
+        proofData = await readProofData(proofFile);
+      }
       await apiFetch('/api/chips/add', {
         method: 'POST',
         body: JSON.stringify({
           amount: selectedAmount,
           metadata: {
             payerName: nameValue,
-            payerSurname: surnameValue
+            payerSurname: surnameValue,
+            proofName: proofFile.name,
+            proofType: proofFile.type,
+            proofSize: proofFile.size,
+            proofData
           }
         })
       });
@@ -716,6 +787,96 @@ const initRanking = () => {
   }).catch(() => {
     list.innerHTML = '<div class="text-white/50">No hay ranking disponible.</div>';
   });
+};
+
+const initAuth = () => {
+  const tabButtons = $$('[data-auth-tab]');
+  const views = $$('[data-auth-view]');
+  const registerButton = $('#register-submit');
+  const loginButton = $('#login-submit');
+  const registerUsername = $('#register-username');
+  const registerPassword = $('#register-password');
+  const registerInvite = $('#register-invite');
+  const loginUsername = $('#login-username');
+  const loginPassword = $('#login-password');
+
+  const setView = (view) => {
+    views.forEach((section) => {
+      section.classList.toggle('hidden', section.dataset.authView !== view);
+    });
+    tabButtons.forEach((btn) => {
+      btn.classList.toggle('bg-gold', btn.dataset.authTab === view);
+      btn.classList.toggle('text-black', btn.dataset.authTab === view);
+      btn.classList.toggle('text-white/60', btn.dataset.authTab !== view);
+    });
+  };
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      const view = btn.dataset.authTab || 'register';
+      setView(view);
+    });
+  });
+
+  registerButton?.addEventListener('click', async () => {
+    const username = registerUsername?.value.trim() ?? "";
+    const password = registerPassword?.value ?? "";
+    const inviteCode = registerInvite?.value.trim().toUpperCase() ?? "";
+    if (username.length < 3) {
+      showToast("Ingresá un usuario válido", "info");
+      return;
+    }
+    if (password.length < 6) {
+      showToast("La contraseña debe tener al menos 6 caracteres", "info");
+      return;
+    }
+    try {
+      const user = await apiFetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ username, password, inviteCode: inviteCode || null })
+      });
+      appState.token = user.token;
+      appState.userId = user.id;
+      appState.username = user.username;
+      localStorage.setItem("truco_token", user.token);
+      localStorage.setItem("truco_user_id", user.id);
+      localStorage.setItem("truco_username", user.username);
+      showToast("Cuenta creada. Bienvenido", "success");
+      navigateTo("/lobby");
+    } catch (err) {
+      console.error(err);
+      showToast("No se pudo crear la cuenta", "error");
+    }
+  });
+
+  loginButton?.addEventListener('click', async () => {
+    const username = loginUsername?.value.trim() ?? "";
+    const password = loginPassword?.value ?? "";
+    if (!username || !password) {
+      showToast("Completá usuario y contraseña", "info");
+      return;
+    }
+    try {
+      const user = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password })
+      });
+      appState.token = user.token;
+      appState.userId = user.id;
+      appState.username = user.username;
+      localStorage.setItem("truco_token", user.token);
+      localStorage.setItem("truco_user_id", user.id);
+      localStorage.setItem("truco_username", user.username);
+      showToast("Sesión iniciada", "success");
+      navigateTo("/lobby");
+    } catch (err) {
+      console.error(err);
+      showToast("Credenciales inválidas", "error");
+    }
+  });
+
+  setView('register');
 };
 
 const initProfileHeader = () => {
@@ -814,19 +975,21 @@ const getPageFromPath = () => {
 
 const initPage = async () => {
   const page = document.body.dataset.page || getPageFromPath();
-  const needsAuth = page !== "landing";
+  const publicPages = new Set(["landing", "registro", "faq", "privacidad", "terminos", "soporte", "bases"]);
+  const needsAuth = !publicPages.has(page);
   if (needsAuth && !protectRoute()) {
     return;
   }
   const ok = await ensureUser();
   if (!ok && needsAuth) {
-    navigateTo("/landing");
+    navigateTo("/registro");
     return;
   }
   bindNavButtons();
   bindFallbackButtons();
   initProfileHeader();
   if (page === 'landing') initLanding();
+  if (page === 'registro') initAuth();
   if (page === 'lobby') initLobby();
   if (page === 'crear-mesa') initCreateRoom();
   if (page === 'unirse') initJoinRoom();
